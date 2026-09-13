@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考研备考工作台</title>
+<style>
+:root{
+  --bg:#f5f7f9; --card:#ffffff; --line:#e8ecf1; --line2:#f1f4f7;
+  --txt:#1f2933; --txt2:#6b7684; --txt3:#9aa4b0;
+  --pri:#3d7f9a; --pri-soft:#e8f2f6;
+  --ok:#4d9d7c; --ok-soft:#e7f4ee;
+  --warn:#d99a4e; --warn-soft:#fbf1e3;
+  --danger:#d9695f; --danger-soft:#fbeceb;
+  --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--txt);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  font-size:14px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;border:none;background:none}
+a{color:var(--pri);text-decoration:none}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#d8dee6;border-radius:8px}
+
+/* ---------- 布局 ---------- */
+.wrap{max-width:1180px;margin:0 auto;padding:0 16px 60px}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(245,247,249,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+.logo{font-size:16px;font-weight:700;letter-spacing:.5px}
+.logo span{color:var(--pri)}
+.topbar .spacer{flex:1}
+.tb-btn{border:1px solid var(--line);background:#fff;border-radius:9px;padding:6px 11px;color:var(--txt2);font-size:13px;transition:.15s}
+.tb-btn:hover{border-color:#cfd8e2;color:var(--txt)}
+.tb-btn.warn{border-color:var(--warn);color:var(--warn);background:var(--warn-soft)}
+
+.nav{max-width:1180px;margin:0 auto;padding:0 16px;display:flex;gap:4px;overflow-x:auto}
+.nav button{padding:10px 12px;color:var(--txt2);font-size:14px;border-bottom:2px solid transparent;white-space:nowrap}
+.nav button.on{color:var(--pri);border-bottom-color:var(--pri);font-weight:600}
+
+.page{display:none;padding-top:18px}
+.page.on{display:block}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:980px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:680px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.card-h{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.card-h h3{font-size:15px;font-weight:600}
+.card-h .spacer{flex:1}
+.card-h .sub{font-size:12px;color:var(--txt3);font-weight:400}
+.muted{color:var(--txt2)}
+.tiny{font-size:12px}
+.empty{padding:26px 10px;text-align:center;color:var(--txt3);font-size:13px;border:1px dashed var(--line);border-radius:10px}
+.syncbar{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px 11px;margin-bottom:12px;font-size:12.5px;flex-wrap:wrap}
+.syncbar .dot{margin-right:0}
+.sync-msg{font-size:12.5px;border-radius:9px;padding:9px 11px;margin-top:10px;background:#f1f4f7;color:var(--txt2);word-break:break-all}
+.sync-msg.ok{background:var(--ok-soft);color:#2f7a5a}
+.sync-msg.err{background:var(--danger-soft);color:var(--danger)}
+.tip{display:flex;align-items:center;gap:10px;background:var(--warn-soft);border-radius:9px;padding:8px 11px;margin-bottom:10px;font-size:12.5px;color:#9a6a2c}
+.tip .btn{margin-left:auto}
+
+.btn{background:var(--pri);color:#fff;border-radius:9px;padding:7px 13px;font-size:13px;transition:.15s}
+.btn:hover{background:#356f88}
+.btn.ghost{background:#fff;color:var(--txt2);border:1px solid var(--line)}
+.btn.ghost:hover{border-color:#cfd8e2;color:var(--txt)}
+.btn.sm{padding:4px 9px;font-size:12px;border-radius:7px}
+.btn.danger{background:var(--danger)}
+.link-btn{color:var(--txt3);font-size:12px;padding:2px 4px}
+.link-btn:hover{color:var(--txt)}
+.link-btn.d:hover{color:var(--danger)}
+
+.tag{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;background:#f1f4f7;color:var(--txt2)}
+.tag.p1{background:var(--danger-soft);color:var(--danger)}
+.tag.p2{background:var(--warn-soft);color:var(--warn)}
+.tag.p3{background:#f1f4f7;color:var(--txt2)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.pri{background:var(--pri-soft);color:var(--pri)}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex:none}
+
+/* ---------- 首页：倒计时 ---------- */
+.hero{background:linear-gradient(135deg,#ffffff 0%,#f2f8fa 100%);border:1px solid var(--line)}
+.hero-top{display:flex;flex-wrap:wrap;gap:18px;align-items:center}
+.cd-num{font-size:44px;font-weight:800;line-height:1;letter-spacing:-1px;color:var(--pri)}
+.cd-lab{font-size:12px;color:var(--txt2);margin-top:4px}
+.hero-meta{display:flex;gap:22px;flex-wrap:wrap}
+.hero-meta .k{font-size:11px;color:var(--txt3)}
+.hero-meta .v{font-size:15px;font-weight:600}
+.bar{height:6px;background:#eef1f5;border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--pri);border-radius:6px;transition:width .4s}
+
+/* ---------- 番茄钟 ---------- */
+.pomo{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.pomo-ring{position:relative;width:150px;height:150px;flex:none}
+.pomo-ring svg{transform:rotate(-90deg)}
+.pomo-in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pomo-time{font-size:30px;font-weight:700;letter-spacing:1px}
+.pomo-mode{font-size:11px;color:var(--txt3);margin-top:2px}
+.pomo-ctrl{flex:1;min-width:220px}
+.pomo-btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.pomo-stats{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--txt2)}
+.pomo-stats b{font-size:16px;color:var(--txt);display:block;font-weight:700}
+.pomo-log{margin-top:10px;font-size:12px;color:var(--txt3);max-height:52px;overflow:auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{padding:4px 10px;font-size:12px;color:var(--txt2)}
+.seg button.on{background:var(--pri-soft);color:var(--pri);font-weight:600}
+
+/* ---------- 任务 ---------- */
+.task{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line2)}
+.task:last-child{border-bottom:none}
+.chk{width:17px;height:17px;border:1.6px solid #cfd8e2;border-radius:5px;flex:none;margin-top:3px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.chk:hover{border-color:var(--pri)}
+.chk.on{background:var(--ok);border-color:var(--ok)}
+.chk.on:after{content:"";width:9px;height:5px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.task-b{flex:1;min-width:0}
+.task-t{font-size:13.5px}
+.task.done .task-t{color:var(--txt3);text-decoration:line-through}
+.task-m{font-size:11.5px;color:var(--txt3);margin-top:3px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.task-a{display:flex;gap:6px;opacity:0;transition:.15s}
+.task:hover .task-a{opacity:1}
+@media(max-width:680px){.task-a{opacity:1}}
+.overdue{color:var(--danger)}
+
+/* ---------- 进度 ---------- */
+.sub-card{border:1px solid var(--line);border-radius:12px;padding:13px}
+.sub-top{display:flex;align-items:center;margin-bottom:8px}
+.sub-name{font-size:13.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub-pct{margin-left:auto;font-size:13px;font-weight:700}
+.sub-line{display:flex;justify-content:space-between;font-size:11.5px;color:var(--txt3);margin-top:7px}
+
+/* ---------- 列表表格 ---------- */
+.tb{width:100%;border-collapse:collapse;font-size:13px}
+.tb th{text-align:left;font-weight:500;color:var(--txt3);font-size:12px;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tb td{padding:10px;border-bottom:1px solid var(--line2);vertical-align:middle}
+.tb tr:last-child td{border-bottom:none}
+.tb tr:hover td{background:#fafbfc}
+.tb .act{text-align:right;white-space:nowrap}
+.tb-wrap{overflow-x:auto}
+.row{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line2)}
+.row:last-child{border-bottom:none}
+.row .grow{flex:1;min-width:0}
+
+/* ---------- 图表 ---------- */
+.chart{display:flex;align-items:flex-end;gap:6px;height:96px;padding-top:6px}
+.chart .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+.chart .b{width:100%;max-width:30px;background:var(--pri-soft);border-radius:5px 5px 0 0;min-height:3px;transition:height .4s;position:relative}
+.chart .b.today{background:var(--pri)}
+.chart .l{font-size:10.5px;color:var(--txt3)}
+.mini-line{width:100%;height:120px}
+
+/* ---------- 指标 ---------- */
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px}
+.kpi .k{font-size:11.5px;color:var(--txt3)}
+.kpi .v{font-size:22px;font-weight:700;line-height:1.3}
+.kpi .v small{font-size:12px;font-weight:500;color:var(--txt2)}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.filters select,.filters input{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px;font-size:13px;outline:none}
+.filters select:focus,.filters input:focus{border-color:var(--pri)}
+
+/* ---------- 弹窗 ---------- */
+.mask{position:fixed;inset:0;background:rgba(25,35,45,.42);display:none;align-items:flex-start;justify-content:center;padding:36px 14px;overflow:auto;z-index:60}
+.mask.on{display:flex}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:520px;box-shadow:0 20px 50px rgba(20,30,40,.18);overflow:hidden}
+.modal.wide{max-width:860px}
+.modal-h{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+.modal-h h3{font-size:15px;font-weight:600}
+.modal-h .x{margin-left:auto;color:var(--txt3);font-size:20px;line-height:1}
+.modal-b{padding:16px 18px;max-height:66vh;overflow:auto}
+.modal-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;background:#fbfcfd}
+.f-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.f{display:flex;flex-direction:column;gap:5px}
+.f.full{grid-column:1/-1}
+.f label{font-size:12px;color:var(--txt2)}
+.f input,.f select,.f textarea{border:1px solid var(--line);border-radius:9px;padding:8px 10px;outline:none;background:#fff;width:100%}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:var(--pri)}
+.f textarea{resize:vertical;min-height:64px}
+.hint{font-size:12px;color:var(--txt3);background:#f7f9fb;border-radius:8px;padding:9px 11px;margin-bottom:12px}
+/* ---------- 番茄钟结束弹窗 ---------- */
+.palert{position:fixed;inset:0;background:rgba(25,35,45,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:80;backdrop-filter:blur(3px)}
+.palert.on{display:flex;animation:pfade .22s ease}
+@keyframes pfade{from{opacity:0}to{opacity:1}}
+.palert-box{background:#fff;border-radius:18px;padding:28px 26px 20px;width:100%;max-width:340px;text-align:center;box-shadow:0 24px 60px rgba(20,30,40,.28);animation:ppop .26s cubic-bezier(.2,1.2,.4,1)}
+@keyframes ppop{from{transform:scale(.9) translateY(10px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+.palert-ic{font-size:40px;line-height:1;margin-bottom:10px}
+.palert-t{font-size:19px;font-weight:700;margin-bottom:6px}
+.palert-s{font-size:13px;color:var(--txt2);margin-bottom:12px}
+.palert-cd{font-size:12px;color:var(--txt3);margin-bottom:14px;min-height:16px}
+.palert-btns{display:flex;gap:8px;justify-content:center}
+.palert-btns .btn{min-width:110px}
+.toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:#25313d;color:#fff;padding:9px 16px;border-radius:10px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:99}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="logo">考研<span>备考工作台</span></div>
+    <div class="spacer"></div>
+    <button class="tb-btn" onclick="openSettings()">设置</button>
+    <button class="tb-btn" id="exportBtn" onclick="exportData()" title="数据只存在本机浏览器，建议每周导出一次">导出</button>
+    <button class="tb-btn" onclick="document.getElementById('importFile').click()">导入</button>
+    <button class="tb-btn" onclick="exportExcel()">导出Excel</button>
+    <button class="tb-btn" id="syncBtn" onclick="openSync()">☁ 同步</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(this)">
+  </div>
+  <div class="nav" id="nav"></div>
+</div>
+
+<div class="wrap">
+  <div id="backupBar" style="padding-top:14px"></div>
+  <div id="syncBar"></div>
+  <section class="page on" id="page-home"></section>
+  <section class="page" id="page-plan"></section>
+  <section class="page" id="page-subject"></section>
+  <section class="page" id="page-paper"></section>
+  <section class="page" id="page-mistake"></section>
+  <section class="page" id="page-mock"></section>
+  <section class="page" id="page-res"></section>
+</div>
+
+<div class="mask" id="mask"><div class="modal" id="modal"></div></div>
+<div class="palert" id="palert">
+  <div class="palert-box">
+    <div class="palert-ic" id="palertIc">🎉</div>
+    <div class="palert-t" id="palertT">专注完成</div>
+    <div class="palert-s" id="palertS">休息一下，起来活动活动</div>
+    <div class="palert-cd" id="palertCd"></div>
+    <div class="palert-btns">
+      <button class="btn" id="palertMain" onclick="palertMain()">开始休息</button>
+      <button class="btn ghost" onclick="palertSkip()">跳过</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===================== 数据 ===================== */
+const KEY = 'kaoyan_workbench_v1';
+const todayStr = () => new Date().toLocaleDateString('sv-SE');
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+function defaultState(){
+  return {
+    meta:{ examDate:'2026-12-19', school:'', major:'', motto:'', targetTotal:0 },
+    subjects:[
+      {id:uid(), name:'英语',     color:'#3d7f9a', target:70,  chapters:[{id:uid(),name:'词汇',done:false},{id:uid(),name:'长难句',done:false},{id:uid(),name:'阅读',done:false},{id:uid(),name:'写作',done:false}]},
+      {id:uid(), name:'政治',     color:'#c0705a', target:70,  chapters:[{id:uid(),name:'马原',done:false},{id:uid(),name:'毛中特',done:false},{id:uid(),name:'史纲',done:false},{id:uid(),name:'思修',done:false}]},
+      {id:uid(), name:'中医综合', color:'#4d9d7c', target:240, chapters:[{id:uid(),name:'中医基础理论',done:false},{id:uid(),name:'中医诊断学',done:false},{id:uid(),name:'中药学',done:false},{id:uid(),name:'方剂学',done:false},{id:uid(),name:'中医内科学',done:false},{id:uid(),name:'针灸学',done:false}]},
+      {id:uid(), name:'自定义科目', color:'#8a7fc0', target:0, chapters:[]}
+    ],
+    plans:[], papers:[], mistakes:[], mocks:[], resources:[], templates:[],
+    sessions:[],
+    settings:{ focusMin:55, restMin:5, sound:true, notify:false, lastSubject:'', warnNoSubject:true, lastExport:'', backupCount:0 }
+  };
+}
+let S = load();
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return defaultState();
+    const d = JSON.parse(raw);
+    const base = defaultState();
+    const s = Object.assign(base, d, {settings:Object.assign(base.settings, d.settings||{})});
+    return migrate(s);
+  }catch(e){ return defaultState(); }
+}
+/* 旧数据迁移：把独立的 tasks 合并进 plans（学习计划） */
+function migrate(s){
+  s.plans = s.plans || [];
+  if(s.tasks && s.tasks.length){
+    s.tasks.forEach(t=>{
+      s.plans.push({
+        id: t.id||uid(), date: t.date||todayStr(), subject: t.subject||'',
+        content: t.title||'', hours: '', priority: t.priority||'中',
+        status: t.status==='已完成'?'已完成':'待完成',
+        deadline: t.deadline||'', note: t.note||''
+      });
+    });
+    delete s.tasks;
+  }
+  s.plans.forEach(p=>{ if(!p.priority) p.priority='中'; if(!p.status) p.status='待完成'; });
+  s.templates = s.templates || [];
+  s.settings.popup = s.settings.popup !== false;
+  s.settings.autoRest = s.settings.autoRest !== false;
+  return s;
+}
+let autoSyncTimer = null, syncing = false;
+function save(){
+  localStorage.setItem(KEY, JSON.stringify(S));
+  // 自动上传：改动后延迟同步；同步过程中的保存不再排程，避免自己触发自己
+  if(!syncing && S.settings && S.settings.autoSync && S.settings.syncCode){
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = setTimeout(()=>{ syncPush(true); }, 2500);
+  }
+}
+
+/* ===================== 工具 ===================== */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('on'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('on'),1900); }
+function daysBetween(a,b){ return Math.round((new Date(b)-new Date(a))/86400000); }
+function weekStart(d=new Date()){ const x=new Date(d); const w=(x.getDay()+6)%7; x.setDate(x.getDate()-w); x.setHours(0,0,0,0); return x; }
+const fmtDate = s => s ? new Date(s).toLocaleDateString('sv-SE') : '';
+function weekDates(){ const ws=weekStart(); return Array.from({length:7},(_,i)=>{const d=new Date(ws); d.setDate(ws.getDate()+i); return d.toLocaleDateString('sv-SE');}); }
+function subjectOf(id){ return S.subjects.find(s=>s.id===id) || {name:'未分类',color:'#9aa4b0'}; }
+const PRI = {'高':'p1','中':'p2','低':'p3'};
+function subjectProgress(sub){
+  if(!sub.chapters || !sub.chapters.length) return 0;
+  return Math.round(sub.chapters.filter(c=>c.done).length / sub.chapters.length * 100);
+}
+function todayMinutes(){
+  const t = todayStr();
+  return S.sessions.filter(s=>s.date===t).reduce((a,b)=>a+b.minutes,0);
+}
+function todayPomos(){ const t=todayStr(); return S.sessions.filter(s=>s.date===t && s.type==='pomodoro').length; }
+
+/* ---------- 按科目统计学习时长 ---------- */
+function minutesIn(dates, sid){
+  return S.sessions.filter(s=>{
+    if(sid && s.subject!==sid) return false;
+    return !dates || dates.indexOf(s.date)>=0;
+  }).reduce((a,b)=>a+(+b.minutes||0),0);
+}
+function subjectMinutes(sid, range){
+  if(range==='today') return minutesIn([todayStr()], sid);
+  if(range==='week')  return minutesIn(weekDates(), sid);
+  return minutesIn(null, sid);            // 全部
+}
+const fmtH = m => m>=60 ? (m/60).toFixed(1)+'h' : m+'m';
+function subjectPomos(sid, range){
+  const dates = range==='today'?[todayStr()] : (range==='week'?weekDates():null);
+  return S.sessions.filter(s=>s.type==='pomodoro' && s.subject===sid && (!dates||dates.indexOf(s.date)>=0)).length;
+}
+/* 各科今日时长占比，用于首页展示 */
+function todayBySubject(){
+  return S.subjects.map(s=>({
+    id:s.id, name:s.name, color:s.color,
+    min: subjectMinutes(s.id,'today'),
+    week: subjectMinutes(s.id,'week'),
+    all: subjectMinutes(s.id,'all'),
+    pomos: subjectPomos(s.id,'today')
+  }));
+}
+
+/* ===================== 弹窗表单 ===================== */
+let modalSubmit = null;
+function openModal({title, fields, values={}, submitText='保存', onSubmit, extra=''}){
+  const f = fields.map(fd=>{
+    const v = values[fd.key]!=null ? values[fd.key] : (fd.def!=null?fd.def:'');
+    let input;
+    if(fd.type==='select'){
+      input = `<select data-k="${fd.key}">${fd.options.map(o=>{const val=typeof o==='object'?o.value:o; const lab=typeof o==='object'?o.label:o; return `<option value="${esc(val)}" ${String(v)===String(val)?'selected':''}>${esc(lab)}</option>`}).join('')}</select>`;
+    }else if(fd.type==='textarea'){
+      input = `<textarea data-k="${fd.key}" placeholder="${esc(fd.ph||'')}">${esc(v)}</textarea>`;
+    }else{
+      input = `<input type="${fd.type||'text'}" data-k="${fd.key}" value="${esc(v)}" placeholder="${esc(fd.ph||'')}" ${fd.step?'step="'+fd.step+'"':''}>`;
+    }
+    return `<div class="f ${fd.full?'full':''}"><label>${esc(fd.label)}</label>${input}</div>`;
+  }).join('');
+  $('#modal').className = 'modal';
+  $('#modal').innerHTML = `
+    <div class="modal-h"><h3>${esc(title)}</h3><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-b">${extra}<div class="f-grid">${f}</div></div>
+    <div class="modal-f">
+      <button class="btn ghost" onclick="closeModal()">取消</button>
+      <button class="btn" onclick="submitModal()">${esc(submitText)}</button>
+    </div>`;
+  modalSubmit = onSubmit;
+  $('#mask').classList.add('on');
+}
+function closeModal(){ $('#mask').classList.remove('on'); modalSubmit=null; }
+function submitModal(){
+  const vals = {};
+  $$('#modal [data-k]').forEach(el=>{ vals[el.dataset.k] = el.value.trim ? el.value.trim() : el.value; });
+  if(modalSubmit && modalSubmit(vals)!==false) closeModal();
+}
+$('#mask').addEventListener('click', e=>{ if(e.target.id==='mask') closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+function confirmDel(fn){ if(confirm('确定删除这条记录吗？')) fn(); }
+
+/* ===================== 番茄钟 ===================== */
+const T = { mode:'focus', remain:S.settings.focusMin*60, running:false, tick:null, subject:S.settings.lastSubject||'', endAt:0 };
+function pomoReset(mode){
+  T.mode = mode || T.mode;
+  T.running = false; clearInterval(T.tick);
+  T.remain = (T.mode==='focus'? S.settings.focusMin : S.settings.restMin) * 60;
+  renderPomo();
+}
+function pomoStart(){
+  if(T.running) return;
+  if(T.remain<=0) pomoReset(T.mode);
+  if(T.mode==='focus' && !T.subject && S.settings.warnNoSubject!==false){
+    toast('未选科目，本轮时长会记到「未分类」，可在右边切换');
+  }
+  T.running = true;
+  T.endAt = Date.now() + T.remain*1000;
+  clearInterval(T.tick);
+  T.tick = setInterval(()=>{
+    T.remain = Math.max(0, Math.round((T.endAt - Date.now())/1000));
+    if(T.remain<=0){ pomoFinish(); return; }
+    tickPomo();
+  },500);
+  renderPomo();
+}
+function pomoPause(){ T.running=false; clearInterval(T.tick); T.remain = Math.max(0, Math.round((T.endAt - Date.now())/1000)); renderPomo(); }
+function pomoSkip(){ const next = T.mode==='focus'?'rest':'focus'; pomoReset(next); }
+function pomoFinish(){
+  clearInterval(T.tick); T.running=false;
+  const wasFocus = T.mode==='focus';
+  if(wasFocus){
+    S.sessions.push({id:uid(), date:todayStr(), minutes:S.settings.focusMin, subject:T.subject, type:'pomodoro', at:Date.now()});
+    save();
+    beep(); notify('专注结束','休息 '+S.settings.restMin+' 分钟，起来活动一下');
+    pomoReset('rest');
+    if(S.settings.autoRest!==false){ pomoStart(); }
+    showPomoAlert('focus');
+  }else{
+    beep(); notify('休息结束','回到座位，继续下一轮专注');
+    pomoReset('focus');
+    showPomoAlert('rest');
+  }
+  renderAll();
+}
+
+/* ===================== 番茄钟结束弹窗 ===================== */
+let palertTimer = null, titleTimer = null, originTitle = document.title;
+function showPomoAlert(finishedMode){
+  if(S.settings.popup===false){ tickPomo(); return; }
+  const focus = finishedMode==='focus';
+  const n = S.sessions.filter(s=>s.date===todayStr() && s.type==='pomodoro').length;
+  $('#palertIc').textContent = focus ? '🎉' : '☕️';
+  $('#palertT').textContent = focus ? '第 '+n+' 个番茄完成！' : '休息结束';
+  $('#palertS').textContent = focus
+    ? '专注 '+S.settings.focusMin+' 分钟已达成' + (T.subject? '（'+subjectOf(T.subject).name+'）' : '') + '。去休息 '+S.settings.restMin+' 分钟，起来走动走动'
+    : '休息好了。回到座位，继续下一轮 '+S.settings.focusMin+' 分钟专注';
+  const cd = $('#palertCd');
+  if(cd){
+    const extra = T.subject
+      ? subjectOf(T.subject).name+' 今日已累计 '+fmtH(subjectMinutes(T.subject,'today'))+' · '+subjectPomos(T.subject,'today')+' 个番茄'
+      : '本轮未指定科目，时长记入「未分类」';
+    cd.dataset.extra = extra;
+  }
+  $('#palertMain').textContent = T.running
+    ? (focus ? '好的，去休息' : '好的，继续专注')
+    : (focus ? '开始休息 '+S.settings.restMin+' 分钟' : '开始下一轮专注');
+  $('#palert').dataset.start = T.running ? '0' : '1';
+  $('#palert').classList.add('on');
+  blinkTitle(focus ? '🎉 专注完成' : '☕️ 休息结束');
+  // 自动关闭（可设置秒数，0 表示不自动关）
+  const auto = +S.settings.popupAuto || 0;
+  clearInterval(palertTimer);
+  const extra = ($('#palertCd').dataset||{}).extra || '';
+  if(auto>0){
+    let left = auto;
+    $('#palertCd').textContent = extra + (extra?' · ':'') + left + ' 秒后自动关闭';
+    palertTimer = setInterval(()=>{
+      left--;
+      if(left<=0){ closePalert(); return; }
+      $('#palertCd').textContent = extra + (extra?' · ':'') + left + ' 秒后自动关闭';
+    },1000);
+  }else{
+    $('#palertCd').textContent = extra || (focus ? '休息倒计时已在后台继续' : '');
+  }
+}
+function closePalert(){
+  clearInterval(palertTimer); palertTimer=null;
+  $('#palert').classList.remove('on');
+  clearInterval(titleTimer); titleTimer=null; document.title = originTitle;
+}
+function palertMain(){
+  const needStart = $('#palert').dataset.start === '1';
+  closePalert();
+  if(needStart && !T.running && T.remain>0) pomoStart();
+  renderPomo();
+}
+function palertSkip(){
+  closePalert();
+  // 专注刚结束 → 现在是休息待开始，跳过休息直接回专注
+  // 休息刚结束 → 已经在专注待开始，只关弹窗即可
+  if(T.mode==='rest') pomoSkip();
+  renderPomo();
+}
+function blinkTitle(txt){
+  clearInterval(titleTimer);
+  document.title = txt;
+  let on = true;
+  titleTimer = setInterval(()=>{ on = !on; document.title = on ? txt : originTitle; }, 900);
+}
+function beep(){
+  if(!S.settings.sound) return;
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0,0.22].forEach(t=>{ const o=ctx.createOscillator(), g=ctx.createGain(); o.connect(g); g.connect(ctx.destination);
+      o.frequency.value= t? 660:880; g.gain.setValueAtTime(.0001,ctx.currentTime+t);
+      g.gain.exponentialRampToValueAtTime(.16,ctx.currentTime+t+.02); g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+t+.18);
+      o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+.2); });
+  }catch(e){}
+}
+function notify(title,body){
+  if(!S.settings.notify) return;
+  try{ if(window.Notification && Notification.permission==='granted') new Notification(title,{body}); }catch(e){}
+}
+function setPomoSubject(v){
+  T.subject = v;
+  S.settings.lastSubject = v;   // 记住上次选择，下次打开还是它
+  save();
+  renderPomo();                 // 刷新本科目已学时长
+}
+const fmtTime = s => String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+const RING = 2*Math.PI*64;
+
+function renderPomo(){
+  const el = $('#pomoBox'); if(!el) return;
+  const total = (T.mode==='focus'? S.settings.focusMin : S.settings.restMin)*60;
+  const pct = total? (total-T.remain)/total : 0;
+  const color = T.mode==='focus' ? '#3d7f9a' : '#4d9d7c';
+  const logs = S.sessions.filter(s=>s.type==='pomodoro' && s.date===todayStr()).slice(-4).reverse()
+    .map(s=>`${s.at? new Date(s.at).toTimeString().slice(0,5):''} · ${s.minutes}分钟${s.subject?' · '+esc(subjectOf(s.subject).name):''}`).join('　|　');
+  const curSubName = T.subject ? (subjectOf(T.subject).name || '') : '';
+  el.innerHTML = `
+    <div class="pomo">
+      <div class="pomo-ring">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="64" fill="none" stroke="#eef1f5" stroke-width="10"/>
+          <circle id="pomoRing" cx="75" cy="75" r="64" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round"
+            stroke-dasharray="${RING.toFixed(1)}" stroke-dashoffset="${(RING*(1-pct)).toFixed(1)}" style="transition:stroke-dashoffset .5s linear"/>
+        </svg>
+        <div class="pomo-in">
+          <div class="pomo-time" id="pomoTime" style="color:${color}">${fmtTime(T.remain)}</div>
+          <div class="pomo-mode" id="pomoMode">${T.mode==='focus'?'专注中':'休息中'} · ${T.mode==='focus'?S.settings.focusMin+'分钟':S.settings.restMin+'分钟'}</div>
+        </div>
+      </div>
+      <div class="pomo-ctrl">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <select id="pomoSubject" onchange="setPomoSubject(this.value)" style="border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:13px;max-width:200px">
+            <option value="">本轮专注科目：未指定</option>
+            ${S.subjects.map(s=>`<option value="${s.id}" ${T.subject===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}
+          </select>
+          <span class="tiny muted" id="pomoSubTime">${curSubName? esc(curSubName)+' 今日已学 '+fmtH(subjectMinutes(T.subject,'today')) : '选了科目，时长会计入该科'}</span>
+        </div>
+        <div class="pomo-btns">
+          <button class="btn" id="pomoMain" onclick="T.running?pomoPause():pomoStart()">${T.running?'暂停':'开始专注'}</button>
+          <button class="btn ghost" onclick="pomoSkip()">${T.mode==='focus'?'去休息':'回专注'}</button>
+          <button class="btn ghost" onclick="pomoReset()">重置</button>
+          <button class="btn ghost" onclick="addManualTime()">补录时长</button>
+        </div>
+        <div class="pomo-stats">
+          <div>今日番茄<b>${todayPomos()}</b></div>
+          <div>今日学习<b>${(todayMinutes()/60).toFixed(1)}h</b></div>
+          <div>${curSubName?esc(curSubName)+'今日':'本轮科目'}<b style="font-size:16px">${curSubName?fmtH(subjectMinutes(T.subject,'today')):'—'}</b></div>
+          <div>本轮状态<b style="font-size:13px">${T.running?'进行中':'待开始'}</b></div>
+        </div>
+        <div class="pomo-log">${logs || '今天还没有完成的番茄，点「开始专注」进入状态。'}</div>
+      </div>
+    </div>`;
+}
+function tickPomo(){
+  const t=$('#pomoTime'), r=$('#pomoRing'), m=$('#pomoMode'), b=$('#pomoMain');
+  if(!t){ renderPomo(); return; }
+  const color = T.mode==='focus' ? '#3d7f9a' : '#4d9d7c';
+  t.textContent = fmtTime(T.remain); t.style.color = color;
+  if(m) m.textContent = (T.mode==='focus'?'专注中':'休息中')+' · '+(T.mode==='focus'?S.settings.focusMin:S.settings.restMin)+'分钟';
+  if(b) b.textContent = T.running?'暂停':'开始专注';
+  const st=$('#pomoSubTime');
+  if(st && T.subject){ const n=subjectOf(T.subject).name; if(n) st.textContent = n+' 今日已学 '+fmtH(subjectMinutes(T.subject,'today')); }
+  if(r){
+    const total = (T.mode==='focus'?S.settings.focusMin:S.settings.restMin)*60;
+    const pct = total ? (total-T.remain)/total : 0;
+    r.setAttribute('stroke-dashoffset',(RING*(1-pct)).toFixed(1));
+    r.setAttribute('stroke',color);
+  }
+}
+function addManualTime(){
+  openModal({title:'补录学习时长', submitText:'记录', fields:[
+    {key:'date',label:'日期',type:'date',def:todayStr()},
+    {key:'minutes',label:'时长（分钟）',type:'number',def:60},
+    {key:'subject',label:'科目',type:'select',options:[{value:'',label:'未指定'}].concat(S.subjects.map(s=>({value:s.id,label:s.name})))},
+    {key:'note',label:'备注',full:true}
+  ], onSubmit:v=>{
+    const m = parseInt(v.minutes)||0; if(m<=0) return toast('请填写时长');
+    S.sessions.push({id:uid(),date:v.date||todayStr(),minutes:m,subject:v.subject,type:'manual',note:v.note,at:Date.now()});
+    save(); renderAll(); toast('已记录 '+m+' 分钟');
+  }});
+}
+
+/* ===================== 首页 ===================== */
+function renderHome(){
+  const left = daysBetween(todayStr(), S.meta.examDate);
+  const total = S.subjects.reduce((a,s)=>a+(+s.target||0),0);
+  const T0 = todayPlanSet();
+  const doneToday = T0.doneToday, todayTasks = T0.today, overdue = T0.overdue;
+  const wd = weekDates();
+  const wTasks = S.plans.filter(t=>t.date && wd.includes(t.date));
+  const wRate = wTasks.length ? Math.round(S.plans.filter(t=>t.status==='已完成' && wd.includes(t.date)).length / wTasks.length*100) : 0;
+  const maxMin = Math.max(60, ...wd.map(d=>S.sessions.filter(s=>s.date===d).reduce((a,b)=>a+b.minutes,0)));
+
+  $('#page-home').innerHTML = `
+  <div class="grid" style="gap:14px">
+    <div class="card hero">
+      <div class="hero-top">
+        <div>
+          <div class="cd-num">${left>=0?left:0}<span style="font-size:16px;font-weight:600;color:var(--txt2)"> 天</span></div>
+          <div class="cd-lab">距离 ${esc(S.meta.examDate)} 初试${left>=0?'还有':'已过'} ${Math.abs(left)} 天${left<0?'（已结束）':''}</div>
+        </div>
+        <div class="hero-meta">
+          <div><div class="k">目标院校</div><div class="v">${esc(S.meta.school||'未设置')}</div></div>
+          <div><div class="k">目标专业</div><div class="v">${esc(S.meta.major||'未设置')}</div></div>
+          <div><div class="k">目标总分</div><div class="v">${total||'—'}</div></div>
+          <div><div class="k">今日任务</div><div class="v">${doneToday} / ${doneToday+todayTasks.length}</div></div>
+        </div>
+        <div style="margin-left:auto;text-align:right;flex:1;min-width:180px">
+          <div class="tiny muted" style="margin-bottom:6px">${esc(S.meta.motto||'每天进步一点点，剩下的交给时间。')}</div>
+          <button class="btn ghost sm" onclick="openSettings()">编辑目标</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card" style="grid-column:span 1">
+        <div class="card-h"><h3>番茄钟</h3><span class="sub">专注 ${S.settings.focusMin} 分钟 · 休息 ${S.settings.restMin} 分钟</span>
+          <div class="spacer"></div>
+          <button class="link-btn" onclick="testPomoAlert()">试一下提醒</button>
+          <button class="link-btn" onclick="openTimerSettings()">调整</button></div>
+        <div id="pomoBox"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>今日概览</h3><div class="spacer"></div>
+          <span class="tiny muted">${todayStr()}</span></div>
+        <div class="grid g2" style="gap:10px">
+          <div class="kpi"><div class="k">今日学习时长</div><div class="v">${(todayMinutes()/60).toFixed(1)}<small> 小时</small></div></div>
+          <div class="kpi"><div class="k">本周完成率</div><div class="v">${wRate}<small>%</small></div></div>
+          <div class="kpi"><div class="k">今日番茄</div><div class="v">${todayPomos()}<small> 个</small></div></div>
+          <div class="kpi"><div class="k">待办 / 逾期</div><div class="v">${todayTasks.length}<small> / </small><span style="color:${overdue.length?'var(--danger)':'inherit'}">${overdue.length}</span></div></div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="tiny muted" style="margin-bottom:4px">本周学习时长（小时）</div>
+          <div class="chart">${wd.map(d=>{
+            const m = S.sessions.filter(s=>s.date===d).reduce((a,b)=>a+b.minutes,0);
+            return `<div class="col"><div class="b ${d===todayStr()?'today':''}" style="height:${Math.round(m/maxMin*76)}px" title="${m}分钟"></div><div class="l">${d.slice(5).replace('-','/')}</div></div>`;
+          }).join('')}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid g2">
+      <div class="card">
+        <div class="card-h"><h3>今日任务</h3><span class="sub">来自学习计划</span><div class="spacer"></div>
+          <button class="btn ghost sm" onclick="go('plan')">去计划</button>
+          <button class="btn sm" onclick="openGenerator()">⚡ 一键生成</button>
+          <button class="btn ghost sm" onclick="editPlan(null, todayStr())">+ 添加</button></div>
+        ${overdue.length?`<div class="tip">
+          <span>有 ${overdue.length} 条逾期未完成${overdue[0].date?'（最早 '+esc(overdue[0].date)+'）':''}</span>
+          <button class="btn sm" onclick="rollOver()">⏩ 顺延到今天</button></div>`:''}
+        ${renderTaskList(todayTasks.concat(overdue), true)}
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>四科备考进度</h3><div class="spacer"></div>
+          <button class="link-btn" onclick="go('subject')">管理科目</button></div>
+        <div class="grid g2" style="gap:10px">
+          ${S.subjects.slice(0,4).map(s=>{
+            const p = subjectProgress(s);
+            const m = subjectMinutes(s.id,'today');
+            return `<div class="sub-card">
+              <div class="sub-top"><span class="dot" style="background:${s.color}"></span><span class="sub-name">${esc(s.name)}</span><span class="sub-pct" style="color:${s.color}">${p}%</span></div>
+              <div class="bar"><i style="width:${p}%;background:${s.color}"></i></div>
+              <div class="sub-line"><span>目标 ${s.target||'—'} 分</span><span>${s.chapters.filter(c=>c.done).length}/${s.chapters.length} 章节</span></div>
+              <div class="sub-line" style="margin-top:2px"><span style="color:${s.color}">⏱ 今日 ${fmtH(m)}</span><span>本周 ${fmtH(subjectMinutes(s.id,'week'))}</span></div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+  renderPomo();
+}
+
+/* 今日任务 = 学习计划中日期为今天 + 之前未完成（逾期）的条目 */
+function todayPlanSet(){
+  const t = todayStr();
+  const all = S.plans;
+  const doneToday = all.filter(p=>p.status==='已完成' && p.date===t).length;
+  const today = all.filter(p=>p.date===t && p.status!=='已完成');
+  const overdue = all.filter(p=>p.status!=='已完成' && p.date && p.date < t);
+  overdue.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  return {doneToday, today, overdue};
+}
+
+function renderTaskList(list, showEmpty){
+  if(!list.length) return `<div class="empty">${showEmpty?'今天还没有任务，用「⚡ 一键生成」把计划批量倒进来':'暂无任务'}</div>`;
+  return list.map(t=>{
+    const s = subjectOf(t.subject);
+    const od = t.status!=='已完成' && t.date && t.date<todayStr();
+    return `<div class="task ${t.status==='已完成'?'done':''}">
+      <button class="chk ${t.status==='已完成'?'on':''}" onclick="togglePlan('${t.id}')"></button>
+      <div class="task-b">
+        <div class="task-t">${esc(t.content)}</div>
+        <div class="task-m">
+          <span class="dot" style="background:${s.color}"></span>${esc(s.name)}
+          <span class="tag ${PRI[t.priority]||'p3'}">${esc(t.priority||'中')}</span>
+          <span class="${od?'overdue':''}">${t.deadline?'⏰ '+esc(t.deadline):''}${od?' 逾期 '+esc(t.date):''}</span>
+          ${t.hours?' · '+t.hours+'h':''}
+          ${t.status==='进行中'?'<span class="tag pri">进行中</span>':''}
+        </div>
+      </div>
+      <div class="task-a">
+        <button class="link-btn" onclick="editPlan('${t.id}')">编辑</button>
+        <button class="link-btn d" onclick="delPlan('${t.id}')">删除</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ===================== 一键生成今日任务 ===================== */
+const SUBJ_KW = [
+  {key:'中医综合', words:['中医综合','中综','中药','方剂','中基','中诊','中内','针灸','伤寒','金匮','温病','内经','中医基础','中医诊断','中医内科','经络','腧穴','中医']},
+  {key:'政治', words:['政治','马原','毛中特','史纲','思修','时政','肖四','肖八','徐涛','腿姐','1000题','马哲','政经','科社']},
+  {key:'英语', words:['英语','单词','词汇','长难句','阅读','作文','写作','翻译','完型','新题型','外刊','英语一','英语二','英语真题']}
+];
+const HIGH_KW = ['必须','务必','重点','重要','一定','优先','deadline','死线','关键'];
+const LOW_KW  = ['有空','选做','随意','optional','顺便','如果'];
+const FILLER  = /^(今天|今日|明天|明日|记得|需要|要|去|把|再|然后|接着|以及|还有)/;
+
+function guessSubject(text){
+  const t = text.toLowerCase();
+  let best = null, bestLen = 0;
+  SUBJ_KW.forEach(g=>{
+    const sub = S.subjects.find(s=>s.name.indexOf(g.key)===0 || g.key.indexOf(s.name)===0);
+    if(!sub) return;
+    g.words.forEach(w=>{ if(t.indexOf(w)>=0 && w.length>bestLen){ bestLen = w.length; best = sub.id; } });
+  });
+  return best || '';
+}
+function extractDeadline(str){
+  const s = String(str);
+  const dm = s.match(/(\d{1,2})\s*[:：]\s*(\d{2})/) || s.match(/(上午|中午|下午|晚上|早上|傍晚)?\s*(\d{1,2})\s*[点時时](半|\d{1,2}分?)?/);
+  if(!dm) return '';
+  let h, mm = 0;
+  if(/^\d{1,2}\s*[:：]/.test(dm[0])){
+    h = parseInt(dm[1],10); mm = parseInt(dm[2],10);
+  }else{
+    h = parseInt(/上午|中午|下午|晚上|早上|傍晚/.test(dm[1]||'') ? dm[2] : dm[1],10);
+    if(/下午|晚上|傍晚/.test(s) && h<12) h += 12;
+    if(/半/.test(dm[0])) mm = 30;
+    else if(dm[3] && /^\d+/.test(dm[3])) mm = parseInt(dm[3],10);
+  }
+  if(!(h>=0 && h<=24)) return '';
+  return String(h).padStart(2,'0')+':'+String(mm).padStart(2,'0');
+}
+/* 纯时间 / 无实质内容的碎片（如「晚上9点前完成」），不该变成任务 */
+const TIME_JUNK = /^(?:在|于|尽量|争取|最好)?\s*(?:今天|今日|明天|明日|今晚|明晚|上午|中午|下午|晚上|早上|傍晚)?\s*\d{1,2}\s*(?:[:：]\d{2})?\s*[点時时]?(?:\d{1,2}分|半)?\s*(?:之?前|以前|左右|截止|之前)?\s*(?:完成|做完|交|结束|截止|搞定|前)?[。.．,，]?$/;
+const MOD_KW = ['务必','必须','重点','重要','一定','优先','关键','有空','选做','随意','顺便','如果','掌握','记牢','背熟','搞懂','完成','搞定','做完','背诵','复习','再','然后','接着'];
+function isJunk(s){
+  const t = s.trim();
+  if(!t) return true;
+  if(TIME_JUNK.test(t)) return true;
+  let core = t.replace(/\d+(\.\d+)?\s*(小时|时|h|H|分钟|篇|章|节|套|题|道|个|页|遍|组|单元)/g,'')
+              .replace(/[0-9\s，,。、；;：:点時时前完成截止之前在做]|\d{1,2}:\d{2}/g,'');
+  MOD_KW.forEach(k=>{ core = core.split(k).join(''); });
+  return core.replace(/[，,。、；;\s]/g,'').length < 2;
+}
+function parseOneLine(raw, opts){
+  let s = String(raw).trim()
+    .replace(/^[\s\-–—•·*●○]+/,'')
+    .replace(/^[（(]?\d+[)）.、．]\s*/,'')
+    .replace(/^[①②③④⑤⑥⑦⑧⑨⑩]\s*/,'')
+    .trim();
+  if(!s || s.length<2) return [];
+  s = s.replace(/[，,。;；！!？?]$/,'').trim();
+  if(!s) return [];
+  if(isJunk(s)) return [];
+
+  // 截止时间：本句没有就用整行的
+  let deadline = extractDeadline(s) || (opts.baseDeadline || '');
+  // 时长
+  let hours = '';
+  const hm = s.match(/(\d+(?:\.\d+)?)\s*(?:个)?\s*(小时|时|h|H)/) || s.match(/(\d+)\s*分钟/);
+  if(hm) hours = /分钟/.test(hm[0]) ? (Math.round(parseInt(hm[1],10)/6)/10).toFixed(1) : hm[1];
+  // 数量
+  const qm = s.match(/(\d+)\s*(篇|章|节|套|题|道|个|页|遍|组|单元|单元题)/);
+  const count = qm ? Math.min(20, parseInt(qm[1],10)) : 0;
+  const unit = qm ? qm[2] : '';
+  // 优先级
+  let priority = opts.basePriority || opts.defPriority || '中';
+  if(HIGH_KW.some(k=>s.indexOf(k)>=0)) priority = '高';
+  else if(LOW_KW.some(k=>s.indexOf(k)>=0)) priority = '低';
+  // 科目
+  const subject = opts.autoSubject ? guessSubject(s) : '';
+
+  let title = s;
+  let prev;
+  do{ prev = title; title = title.replace(FILLER,'').trim(); }while(title!==prev && title.length>2);
+  title = (title||s).replace(/^[，,、]\s*/,'').trim() || s;
+
+  if(opts.expand && count>1 && /篇|章|节|套|遍|组|单元/.test(unit)){
+    const per = hours ? (Math.max(0.1, +(hours)/count)).toFixed(1) : '';
+    return Array.from({length:count},(_,i)=>({
+      content:`${title}（第 ${i+1} ${unit}）`, subject, priority, deadline, hours:per, status:'待完成'
+    }));
+  }
+  return [{content:title, subject, priority, deadline, hours, status:'待完成'}];
+}
+function parseTaskText(text, opts){
+  const lines = text.split(/\r?\n/);
+  const out = [];
+  lines.forEach(line=>{
+    let parts = [line];
+    if(!/^[\s\-–—•·*●○]?[（(]?\d+[)）.、．]/.test(line.trim()) && line.length>0){
+      parts = line.split(/[。;；\n]/);
+    }
+    parts.forEach(p=>{
+      const seg = String(p).length>18 ? String(p).split(/(?<=[，,、])/) : [p];
+      const baseDeadline = extractDeadline(String(p));
+      const bp = HIGH_KW.some(k=>String(p).indexOf(k)>=0) ? '高' : (LOW_KW.some(k=>String(p).indexOf(k)>=0) ? '低' : null);
+      seg.forEach(x=>{ parseOneLine(x, Object.assign({},opts,{baseDeadline, basePriority:bp})).forEach(r=>out.push(r)); });
+    });
+  });
+  const seen = new Set();
+  return out.filter(r=>{ const k=r.content; if(seen.has(k)) return false; seen.add(k); return r.content.length>1; });
+}
+
+let GEN_ROWS = [];
+function openGenerator(){
+  GEN_ROWS = [];
+  const subOpts = [{value:'',label:'未分类'}].concat(S.subjects.map(s=>({value:s.id,label:s.name})));
+  $('#modal').className = 'modal wide';
+  $('#modal').innerHTML = `
+    <div class="modal-h"><h3>⚡ 一键生成今日任务</h3><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-b">
+      <div class="hint">把你的计划、待办、聊天记录大段粘贴进来，自动拆成一条条任务并加入学习计划。支持换行/句号/分号分隔，能自动认科目、时长、优先级、数量。</div>
+      <textarea id="genText" style="width:100%;min-height:120px;border:1px solid var(--line);border-radius:10px;padding:10px;outline:none;resize:vertical"
+        placeholder="例如：&#10;1. 背英语单词 100 个&#10;2. 英语阅读精读 2 篇，晚上9点前完成&#10;看政治马原视频 1 小时&#10;复习方剂学解表剂 1 章，务必掌握&#10;有空的话做一套中综真题"></textarea>
+      <div class="f-grid" style="margin-top:12px">
+        <div class="f"><label>加入日期</label><input type="date" id="genDate" value="${todayStr()}"></div>
+        <div class="f"><label>认不出的默认科目</label><select id="genSub">${subOpts.map(o=>`<option value="${o.value}">${esc(o.label)}</option>`).join('')}</select></div>
+        <div class="f"><label>默认优先级</label><select id="genPri"><option>中</option><option>高</option><option>低</option></select></div>
+        <div class="f"><label>拆分方式</label><select id="genExpand"><option value="1">数量展开（阅读3篇→3条）</option><option value="0">不展开</option></select></div>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px" class="tiny muted">
+        <label><input type="checkbox" id="genAutoSub" checked> 自动识别科目</label>
+        <label><input type="checkbox" id="genKeepTime" checked> 自动识别时长/截止时间</label>
+      </div>
+      <div style="margin-top:12px"><button class="btn" onclick="runGenerate()">解析预览</button>
+        <span class="tiny muted" style="margin-left:8px">解析后可在下方逐条修改</span></div>
+      <div id="genPreview"></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn ghost" onclick="closeModal()">取消</button>
+      <button class="btn" onclick="saveGenerated()">加入学习计划</button>
+    </div>`;
+  $('#mask').classList.add('on');
+}
+function runGenerate(){
+  const text = ($('#genText')||{}).value || '';
+  if(!text.trim()) return toast('先粘贴一段文字');
+  const opts = {
+    autoSubject: ($('#genAutoSub')||{}).checked !== false,
+    expand: (($('#genExpand')||{}).value) === '1',
+    defPriority: ($('#genPri')||{}).value || '中'
+  };
+  const defSub = ($('#genSub')||{}).value || '';
+  let rows = parseTaskText(text, opts);
+  if(($('#genKeepTime')||{}).checked === false) rows.forEach(r=>{ r.deadline=''; r.hours=''; });
+  rows.forEach(r=>{ if(!r.subject) r.subject = defSub; });
+  if(!rows.length) return toast('没解析出任务，试试每行写一件事');
+  GEN_ROWS = rows;
+  renderGenPreview();
+  toast('解析出 '+rows.length+' 条，可逐条修改');
+}
+function renderGenPreview(){
+  const subOpts = [{value:'',label:'未分类'}].concat(S.subjects.map(s=>({value:s.id,label:s.name})));
+  $('#genPreview').innerHTML = `
+    <div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px">
+      <div style="display:flex;align-items:center;margin-bottom:8px">
+        <b style="font-size:13px">解析结果 ${GEN_ROWS.length} 条</b>
+        <div style="flex:1"></div>
+        <button class="link-btn" onclick="genToggleAll(true)">全选</button>
+        <button class="link-btn" onclick="genToggleAll(false)">全不选</button>
+        <button class="link-btn d" onclick="GEN_ROWS=[];renderGenPreview()">清空</button>
+      </div>
+      <div class="tb-wrap"><table class="tb"><thead><tr>
+        <th style="width:32px">✓</th><th>任务内容</th><th style="width:120px">科目</th>
+        <th style="width:80px">优先级</th><th style="width:74px">时长h</th><th style="width:96px">截止</th><th style="width:40px"></th>
+      </tr></thead><tbody>
+      ${GEN_ROWS.map((r,i)=>`<tr>
+        <td><input type="checkbox" class="gen-ck" data-i="${i}" checked></td>
+        <td><input class="gen-c" data-i="${i}" value="${esc(r.content)}" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:5px 7px"></td>
+        <td><select class="gen-s" data-i="${i}" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:5px">${subOpts.map(o=>`<option value="${o.value}" ${r.subject===o.value?'selected':''}>${esc(o.label)}</option>`).join('')}</select></td>
+        <td><select class="gen-p" data-i="${i}" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:5px">${['高','中','低'].map(p=>`<option ${r.priority===p?'selected':''}>${p}</option>`).join('')}</select></td>
+        <td><input class="gen-h" data-i="${i}" value="${esc(r.hours||'')}" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:5px 6px"></td>
+        <td><input type="time" class="gen-d" data-i="${i}" value="${esc(r.deadline||'')}" style="width:100%;border:1px solid var(--line);border-radius:7px;padding:5px 6px"></td>
+        <td><button class="link-btn d" onclick="genRemove(${i})">×</button></td>
+      </tr>`).join('')}
+      </tbody></table></div>
+    </div>`;
+}
+function genCollect(){
+  const box = $('#genPreview');
+  if(!box) return;
+  box.querySelectorAll('.gen-c').forEach(el=>{ const i=+el.dataset.i; if(GEN_ROWS[i]) GEN_ROWS[i].content = el.value.trim(); });
+  box.querySelectorAll('.gen-s').forEach(el=>{ const i=+el.dataset.i; if(GEN_ROWS[i]) GEN_ROWS[i].subject = el.value; });
+  box.querySelectorAll('.gen-p').forEach(el=>{ const i=+el.dataset.i; if(GEN_ROWS[i]) GEN_ROWS[i].priority = el.value; });
+  box.querySelectorAll('.gen-h').forEach(el=>{ const i=+el.dataset.i; if(GEN_ROWS[i]) GEN_ROWS[i].hours = el.value.trim(); });
+  box.querySelectorAll('.gen-d').forEach(el=>{ const i=+el.dataset.i; if(GEN_ROWS[i]) GEN_ROWS[i].deadline = el.value; });
+  box.querySelectorAll('.gen-ck').forEach(el=>{ const i=+el.dataset.i; if(GEN_ROWS[i]) GEN_ROWS[i]._on = el.checked; });
+}
+function genToggleAll(v){ genCollect(); GEN_ROWS.forEach(r=>r._on=v); renderGenPreview(); }
+function genRemove(i){ genCollect(); GEN_ROWS.splice(i,1); renderGenPreview(); }
+function saveGenerated(){
+  genCollect();
+  const date = ($('#genDate')||{}).value || todayStr();
+  const picked = GEN_ROWS.filter(r=>r._on!==false && r.content);
+  if(!picked.length) return toast('至少勾选一条任务');
+  picked.forEach(r=>{
+    S.plans.push({id:uid(), date, subject:r.subject||'', content:r.content, hours:r.hours||'',
+      priority:r.priority||'中', status:'待完成', deadline:r.deadline||'', note:''});
+  });
+  save(); closeModal(); renderAll(); toast('已加入 '+picked.length+' 条到 '+date);
+}
+/* ===================== 学习计划 ===================== */
+let planFilter = 'week';
+function renderPlan(){
+  const wd = weekDates();
+  let list = S.plans.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  if(planFilter==='week') list = list.filter(p=>wd.includes(p.date));
+  if(planFilter==='undone') list = list.filter(p=>p.status!=='已完成');
+  const groups = {};
+  list.forEach(p=>{ (groups[p.date||'未安排'] = groups[p.date||'未安排']||[]).push(p); });
+  const hours = list.reduce((a,b)=>a+(+b.hours||0),0);
+
+  $('#page-plan').innerHTML = `
+  <div class="card">
+    <div class="card-h"><h3>学习计划</h3><span class="sub">首页「今日任务」直接取自这里</span><div class="spacer"></div>
+      <button class="btn sm" onclick="openGenerator()">⚡ 一键生成</button>
+      <button class="btn ghost sm" onclick="editPlan()">+ 新增计划</button></div>
+    <div class="filters">
+      <div class="seg">
+        <button class="${planFilter==='week'?'on':''}" onclick="planFilter='week';renderPlan()">本周</button>
+        <button class="${planFilter==='all'?'on':''}" onclick="planFilter='all';renderPlan()">全部</button>
+        <button class="${planFilter==='undone'?'on':''}" onclick="planFilter='undone';renderPlan()">未完成</button>
+      </div>
+      <div style="flex:1"></div>
+      <button class="tb-btn" onclick="rollOver()">⏩ 顺延未完成</button>
+      <button class="tb-btn" onclick="openTemplate()">📋 明日计划模板</button>
+      <span class="tiny muted">共 ${list.length} 条 · 预计 ${hours.toFixed(1)} 小时</span>
+    </div>
+    ${Object.keys(groups).length ? Object.keys(groups).sort().map(d=>`
+      <div style="margin-bottom:6px">
+        <div class="tiny muted" style="padding:8px 0 4px">${esc(d)}${d===todayStr()?' · 今天':''}</div>
+        ${groups[d].map(p=>{
+          const s = subjectOf(p.subject);
+          return `<div class="row">
+            <button class="chk ${p.status==='已完成'?'on':''}" onclick="togglePlan('${p.id}')"></button>
+            <div class="grow">
+              <div style="${p.status==='已完成'?'color:var(--txt3);text-decoration:line-through':''}">${esc(p.content)}</div>
+              <div class="task-m"><span class="dot" style="background:${s.color}"></span>${esc(s.name)}
+                <span class="tag ${PRI[p.priority]||'p3'}">${esc(p.priority||'中')}</span>
+                ${p.deadline?'⏰ '+esc(p.deadline):''}${p.hours?' · '+p.hours+'h':''}${p.note?' · '+esc(p.note):''}</div>
+            </div>
+            <button class="link-btn" onclick="editPlan('${p.id}')">编辑</button>
+            <button class="link-btn d" onclick="delPlan('${p.id}')">删除</button>
+          </div>`;
+        }).join('')}
+      </div>`).join('') : '<div class="empty">还没有计划，点「新增计划」把这一周的安排写下来。</div>'}
+  </div>`;
+}
+function editPlan(id, defDate){
+  const p = id ? S.plans.find(x=>x.id===id) : null;
+  openModal({title:p?'编辑计划':'新增计划', fields:[
+    {key:'content',label:'计划内容',full:true,ph:'例如：中综方剂学 1 章 + 练习题'},
+    {key:'subject',label:'科目',type:'select',options:[{value:'',label:'未分类'}].concat(S.subjects.map(s=>({value:s.id,label:s.name})))},
+    {key:'date',label:'日期',type:'date',def:defDate||todayStr()},
+    {key:'deadline',label:'截止时间',type:'time'},
+    {key:'priority',label:'优先级',type:'select',options:['高','中','低'],def:'中'},
+    {key:'status',label:'完成状态',type:'select',options:['待完成','进行中','已完成'],def:'待完成'},
+    {key:'hours',label:'预计时长（小时）',type:'number',step:'0.5'},
+    {key:'note',label:'备注',type:'textarea',full:true}
+  ], values:p||{}, onSubmit:v=>{
+    if(!v.content) return toast('请填写计划内容');
+    if(p) Object.assign(p,v); else S.plans.push(Object.assign({id:uid()},v));
+    save(); renderPlan(); renderHome(); toast('已保存');
+  }});
+}
+function delPlan(id){ confirmDel(()=>{ S.plans=S.plans.filter(x=>x.id!==id); save(); renderPlan(); }); }
+function togglePlan(id){ const p=S.plans.find(x=>x.id===id); p.status = p.status==='已完成'?'待完成':'已完成'; save(); renderPlan(); }
+
+/* ---------- 顺延未完成 + 明日计划模板 ---------- */
+function tomorrowStr(){ const d=new Date(); d.setDate(d.getDate()+1); return d.toLocaleDateString('sv-SE'); }
+function overdueList(){ const t=todayStr(); return S.plans.filter(p=>p.status!=='已完成' && p.date && p.date<t); }
+function rollOver(){
+  const list = overdueList();
+  if(!list.length) return toast('没有需要顺延的未完成计划');
+  const t = todayStr();
+  openModal({title:'顺延未完成任务', submitText:'顺延到今天', fields:[], onSubmit:()=>{}});
+  $('#modal .modal-b').innerHTML = `
+    <div class="hint">以下 ${list.length} 条已过期且未完成，勾选后把日期改为 <b>${t}</b>。</div>
+    <div id="rollList">${list.map((p,i)=>`
+      <div class="row" style="padding:8px 0">
+        <input type="checkbox" class="roll-ck" data-id="${p.id}" checked style="width:16px;height:16px">
+        <div class="grow"><div style="font-size:13px">${esc(p.content)}</div>
+          <div class="task-m"><span class="overdue">原定 ${esc(p.date)} · 逾期 ${Math.abs(daysBetween(p.date,t))} 天</span></div></div>
+      </div>`).join('')}</div>`;
+  modalSubmit = ()=>{
+    const ids = Array.from(document.querySelectorAll('#rollList .roll-ck')).filter(e=>e.checked).map(e=>e.dataset.id);
+    if(!ids.length) return toast('至少勾选一条');
+    ids.forEach(id=>{ const p=S.plans.find(x=>x.id===id); if(p){ p.date=t; p.rolled=(p.rolled||0)+1; } });
+    save(); renderAll(); toast('已顺延 '+ids.length+' 条到今天');
+  };
+}
+/* 模板：S.templates = [{id,name,items:[{content,subject,priority,hours,deadline}]}] */
+function templates(){ return S.templates || (S.templates = []); }
+function openTemplate(){
+  const tps = templates();
+  const tmr = tomorrowStr();
+  $('#modal').className = 'modal wide';
+  $('#modal').innerHTML = `
+    <div class="modal-h"><h3>📋 明日计划模板</h3><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-b">
+      <div class="hint">把常做的固定安排存成模板（如「每日固定四项」），早上点一下就铺好明天/今天的计划，不用重复输入。</div>
+      <div class="f" style="margin-bottom:12px"><label>套用到日期</label>
+        <input type="date" id="tpDate" value="${tmr}"></div>
+      ${tps.length ? tps.map((tp,i)=>`
+        <div class="sub-card" style="margin-bottom:10px">
+          <div class="sub-top"><span class="sub-name">${esc(tp.name)}</span>
+            <span class="sub-pct tiny muted">${tp.items.length} 条</span></div>
+          <div class="tiny muted" style="margin:4px 0 8px">${tp.items.map(it=>esc(it.content)).join(' · ') || '（空模板）'}</div>
+          <div style="display:flex;gap:10px">
+            <button class="btn sm" onclick="applyTemplate(${i})">套用到选中日期</button>
+            <button class="link-btn" onclick="saveTemplateFrom(${i})">用当前内容更新</button>
+            <div style="flex:1"></div>
+            <button class="link-btn d" onclick="delTemplate(${i})">删除模板</button>
+          </div>
+        </div>`).join('') : '<div class="empty">还没有模板，点下面按钮把某一天的计划存成模板</div>'}
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn ghost" onclick="saveTemplateFrom()">+ 把某天的计划存为模板</button>
+        <button class="btn ghost" onclick="copyDay()">复制某天计划到另一天</button>
+      </div>
+    </div>
+    <div class="modal-f"><button class="btn ghost" onclick="closeModal()">关闭</button></div>`;
+  $('#mask').classList.add('on');
+}
+function applyTemplate(i){
+  const tp = templates()[i]; if(!tp) return;
+  const date = ($('#tpDate')||{}).value || tomorrowStr();
+  if(!tp.items.length) return toast('模板是空的');
+  tp.items.forEach(it=>{
+    S.plans.push(Object.assign({id:uid(), date, status:'待完成', note:''}, JSON.parse(JSON.stringify(it))));
+  });
+  save(); closeModal(); renderAll(); toast('已套用「'+tp.name+'」'+tp.items.length+' 条到 '+date);
+}
+function delTemplate(i){
+  if(!confirm('删除这个模板？')) return;
+  templates().splice(i,1); save(); openTemplate();
+}
+function saveTemplateFrom(i){
+  const tps = templates();
+  const old = i!=null ? tps[i] : null;
+  const dayOpts = Array.from(new Set(S.plans.map(p=>p.date).filter(Boolean))).sort().reverse();
+  openModal({title: old? '更新模板：'+old.name : '存为新模板', submitText:'保存模板', fields:[
+    {key:'name',label:'模板名称',full:true,def:old?old.name:'',ph:'如：每日固定四项'},
+    {key:'src',label:'来源日期',type:'select',full:true,options:dayOpts.length?dayOpts:[todayStr()], def:dayOpts[0]||todayStr()}
+  ], onSubmit:v=>{
+    if(!v.name) return toast('请填模板名称');
+    const items = S.plans.filter(p=>p.date===v.src).map(p=>({
+      content:p.content, subject:p.subject||'', priority:p.priority||'中', hours:p.hours||'', deadline:p.deadline||''
+    }));
+    if(!items.length) return toast('该日期没有计划');
+    if(old){ old.name = v.name; old.items = items; }
+    else templates().push({id:uid(), name:v.name, items});
+    save(); openTemplate(); toast('已保存模板 '+v.name);
+  }});
+}
+function copyDay(){
+  const dayOpts = Array.from(new Set(S.plans.map(p=>p.date).filter(Boolean))).sort().reverse();
+  openModal({title:'复制某天计划到另一天', submitText:'复制', fields:[
+    {key:'from',label:'来源日期',type:'select',options:dayOpts.length?dayOpts:[todayStr()],def:dayOpts[0]||todayStr()},
+    {key:'to',label:'目标日期',type:'date',def:tomorrowStr()},
+    {key:'only',label:'只复制',type:'select',options:[{value:'undone',label:'未完成的部分'},{value:'all',label:'全部'},]}
+  ], onSubmit:v=>{
+    const src = S.plans.filter(p=>p.date===v.from && (v.only!=='all' ? p.status!=='已完成' : true));
+    if(!src.length) return toast('来源日期没有可复制的计划');
+    src.forEach(p=>{
+      S.plans.push({id:uid(), date:v.to, subject:p.subject||'', content:p.content, hours:p.hours||'',
+        priority:p.priority||'中', status:'待完成', deadline:p.deadline||'', note:p.note||''});
+    });
+    save(); renderAll(); toast('已复制 '+src.length+' 条到 '+v.to);
+  }});
+}
+
+/* ===================== 科目进度 ===================== */
+function renderSubject(){
+  const rows = todayBySubject();
+  const totalAll = rows.reduce((a,b)=>a+b.min,0);
+  const totalWeek = rows.reduce((a,b)=>a+b.week,0);
+  const maxMin = Math.max(1, ...rows.map(r=>r.min));
+  $('#page-subject').innerHTML = `
+  <div class="card" style="margin-bottom:14px">
+    <div class="card-h"><h3>各科学习时长</h3><span class="sub">番茄钟与补录时长自动累计到这里</span></div>
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="kpi"><div class="k">今日总学习</div><div class="v">${(totalAll/60).toFixed(1)}<small> 小时</small></div></div>
+      <div class="kpi"><div class="k">本周总学习</div><div class="v">${(totalWeek/60).toFixed(1)}<small> 小时</small></div></div>
+      <div class="kpi"><div class="k">今日番茄</div><div class="v">${todayPomos()}<small> 个</small></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      ${rows.map(r=>{
+        const pctTotal = totalAll ? Math.round(r.min/totalAll*100) : 0;
+        return `<div>
+          <div style="display:flex;align-items:center;font-size:13px;margin-bottom:4px">
+            <span class="dot" style="background:${r.color}"></span><b>${esc(r.name)}</b>
+            <span style="margin-left:auto;color:var(--txt2)" class="tiny">今日 ${fmtH(r.min)} · 本周 ${fmtH(r.week)} · 累计 ${fmtH(r.all)}</span>
+          </div>
+          <div class="bar" style="height:8px"><i style="width:${Math.round(r.min/maxMin*100)}%;background:${r.color}"></i></div>
+          <div class="tiny muted" style="margin-top:3px">今日 ${r.pomos} 个番茄${totalAll?' · 占今日 '+pctTotal+'%':''}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h3>科目进度</h3><span class="sub">科目名称、颜色、目标分都能改</span><div class="spacer"></div>
+      <button class="btn sm" onclick="editSubject()">+ 新增科目</button></div>
+    <div class="grid g2">
+      ${S.subjects.map(s=>{
+        const p = subjectProgress(s);
+        const m = subjectMinutes(s.id,'today');
+        return `<div class="sub-card">
+          <div class="sub-top"><span class="dot" style="background:${s.color}"></span><span class="sub-name">${esc(s.name)}</span>
+            <span class="sub-pct" style="color:${s.color}">${p}%</span></div>
+          <div class="bar"><i style="width:${p}%;background:${s.color}"></i></div>
+          <div class="sub-line"><span>目标 ${s.target||'—'} 分</span><span>${s.chapters.filter(c=>c.done).length}/${s.chapters.length} 章节 · ${s.chapters.filter(c=>c.done).length} 已完成</span></div>
+          <div class="sub-line" style="margin-top:2px">
+            <span style="color:${s.color}">⏱ 今日 ${fmtH(m)}</span>
+            <span>本周 ${fmtH(subjectMinutes(s.id,'week'))} · 累计 ${fmtH(subjectMinutes(s.id,'all'))}</span></div>
+          <div style="margin-top:10px">
+            ${s.chapters.map(c=>`<div class="row" style="padding:6px 0">
+              <button class="chk ${c.done?'on':''}" onclick="toggleChapter('${s.id}','${c.id}')"></button>
+              <div class="grow" style="font-size:13px;${c.done?'color:var(--txt3);text-decoration:line-through':''}">${esc(c.name)}</div>
+              <button class="link-btn d" onclick="delChapter('${s.id}','${c.id}')">删除</button>
+            </div>`).join('') || '<div class="tiny muted" style="padding:6px 0">还没有章节，添加后可按章打勾自动算进度</div>'}
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px;border-top:1px solid var(--line2);padding-top:9px">
+            <button class="link-btn" onclick="addChapter('${s.id}')">+ 添加章节</button>
+            <button class="link-btn" onclick="editSubject('${s.id}')">编辑科目</button>
+            <div style="flex:1"></div>
+            <button class="link-btn d" onclick="delSubject('${s.id}')">删除科目</button>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+function editSubject(id){
+  const s = id ? S.subjects.find(x=>x.id===id) : null;
+  openModal({title:s?'编辑科目':'新增科目', fields:[
+    {key:'name',label:'科目名称',ph:'如：英语 / 政治 / 中医综合'},
+    {key:'target',label:'目标分数',type:'number'},
+    {key:'color',label:'颜色',type:'select',options:[
+      {value:'#3d7f9a',label:'青蓝'},{value:'#4d9d7c',label:'墨绿'},{value:'#c0705a',label:'砖红'},
+      {value:'#8a7fc0',label:'紫'},{value:'#d99a4e',label:'土黄'},{value:'#5b8fc9',label:'天蓝'}]}
+  ], values:s||{color:'#3d7f9a'}, onSubmit:v=>{
+    if(!v.name) return toast('请填写科目名称');
+    if(s) Object.assign(s,v,{target:+v.target||0});
+    else S.subjects.push({id:uid(),name:v.name,target:+v.target||0,color:v.color,chapters:[]});
+    save(); renderAll(); toast('已保存');
+  }});
+}
+function delSubject(id){
+  if(!confirm('删除后该科目下的章节与相关记录关联会失效，确定删除？')) return;
+  S.subjects = S.subjects.filter(x=>x.id!==id); save(); renderAll();
+}
+function addChapter(sid){
+  const s = S.subjects.find(x=>x.id===sid);
+  openModal({title:'添加章节 · '+s.name, fields:[{key:'name',label:'章节名称',full:true,ph:'如：方剂学·解表剂'}],
+    submitText:'添加', onSubmit:v=>{
+      if(!v.name) return toast('请填写名称');
+      s.chapters.push({id:uid(),name:v.name,done:false}); save(); renderAll();
+    }});
+}
+function toggleChapter(sid,cid){ const c=S.subjects.find(x=>x.id===sid).chapters.find(x=>x.id===cid); c.done=!c.done; save(); renderSubject(); renderHome(); }
+function delChapter(sid,cid){ const s=S.subjects.find(x=>x.id===sid); s.chapters=s.chapters.filter(x=>x.id!==cid); save(); renderSubject(); renderHome(); }
+
+/* ===================== 真题管理 ===================== */
+function renderPaper(){
+  const list = S.papers.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const avg = list.length ? (list.reduce((a,b)=>a+(+b.score||0),0)/list.length).toFixed(1) : '—';
+  const best = list.length ? Math.max(...list.map(p=>+p.score||0)) : '—';
+  const recent = list.slice(0,8).reverse();
+  const maxS = Math.max(1, ...recent.map(p=>+p.score||0));
+  $('#page-paper').innerHTML = `
+  <div class="card">
+    <div class="card-h"><h3>真题管理</h3><span class="sub">每套真题的得分与复盘</span><div class="spacer"></div>
+      <button class="btn sm" onclick="editPaper()">+ 记录真题</button></div>
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="kpi"><div class="k">已做套数</div><div class="v">${list.length}</div></div>
+      <div class="kpi"><div class="k">平均分</div><div class="v">${avg}</div></div>
+      <div class="kpi"><div class="k">最高分</div><div class="v">${best}</div></div>
+    </div>
+    ${recent.length?`<div class="tiny muted" style="margin-bottom:2px">最近 ${recent.length} 套得分</div>
+    <div class="chart" style="height:110px">${recent.map(p=>`<div class="col" title="${esc(p.name)} ${p.score}分">
+      <div class="b" style="height:${Math.round((+p.score||0)/maxS*80)}px;background:${subjectOf(p.subject).color}"></div>
+      <div class="l">${esc((p.name||'').slice(-4))}</div></div>`).join('')}</div>`:''}
+    <div class="tb-wrap" style="margin-top:14px">
+    ${list.length?`<table class="tb"><thead><tr><th>试卷</th><th>科目</th><th>日期</th><th>得分</th><th>满分</th><th>正确率</th><th>用时</th><th>复盘</th><th class="act">操作</th></tr></thead><tbody>
+      ${list.map(p=>{
+        const rate = p.total? Math.round((+p.score)/(+p.total)*100)+'%' : '—';
+        return `<tr>
+        <td>${esc(p.name)}</td>
+        <td><span class="dot" style="background:${subjectOf(p.subject).color}"></span>${esc(subjectOf(p.subject).name)}</td>
+        <td class="muted">${esc(p.date||'')}</td>
+        <td><b>${esc(p.score||0)}</b></td>
+        <td class="muted">${esc(p.total||'—')}</td>
+        <td>${rate}</td>
+        <td class="muted">${p.duration?p.duration+' 分钟':'—'}</td>
+        <td class="muted tiny">${esc(p.note||'')}</td>
+        <td class="act"><button class="link-btn" onclick="editPaper('${p.id}')">编辑</button>
+        <button class="link-btn d" onclick="delPaper('${p.id}')">删除</button></td></tr>`;
+      }).join('')}</tbody></table>`:'<div class="empty">还没有真题记录，做完一套就来记一笔。</div>'}
+    </div>
+  </div>`;
+}
+function editPaper(id){
+  const p = id ? S.papers.find(x=>x.id===id) : null;
+  openModal({title:p?'编辑真题记录':'记录真题', fields:[
+    {key:'name',label:'试卷名称',ph:'如：2024 年英语一真题'},
+    {key:'subject',label:'科目',type:'select',options:[{value:'',label:'未分类'}].concat(S.subjects.map(s=>({value:s.id,label:s.name})))},
+    {key:'date',label:'完成日期',type:'date',def:todayStr()},
+    {key:'score',label:'得分',type:'number'},
+    {key:'total',label:'满分',type:'number',def:100},
+    {key:'duration',label:'用时（分钟）',type:'number'},
+    {key:'note',label:'复盘要点',type:'textarea',full:true,ph:'错在哪、下次注意什么'}
+  ], values:p||{}, onSubmit:v=>{
+    if(!v.name) return toast('请填写试卷名称');
+    if(p) Object.assign(p,v); else S.papers.push(Object.assign({id:uid()},v));
+    save(); renderPaper(); toast('已保存');
+  }});
+}
+function delPaper(id){ confirmDel(()=>{ S.papers=S.papers.filter(x=>x.id!==id); save(); renderPaper(); }); }
+
+/* ===================== 错题薄弱点 ===================== */
+let mkFilter = 'all';
+function renderMistake(){
+  let list = S.mistakes.slice();
+  if(mkFilter==='un') list = list.filter(m=>m.status!=='已掌握');
+  else if(mkFilter!=='all') list = list.filter(m=>m.subject===mkFilter);
+  list.sort((a,b)=>(a.status==='已掌握')-(b.status==='已掌握') || (b.date||'').localeCompare(a.date||''));
+  const bySubject = S.subjects.map(s=>({name:s.name,color:s.color,n:S.mistakes.filter(m=>m.subject===s.id).length}));
+  $('#page-mistake').innerHTML = `
+  <div class="card">
+    <div class="card-h"><h3>错题与薄弱点</h3><span class="sub">记一道，收一道</span><div class="spacer"></div>
+      <button class="btn sm" onclick="editMistake()">+ 记录错题</button></div>
+    <div class="filters">
+      <div class="seg">
+        <button class="${mkFilter==='all'?'on':''}" onclick="mkFilter='all';renderMistake()">全部</button>
+        <button class="${mkFilter==='un'?'on':''}" onclick="mkFilter='un';renderMistake()">未掌握</button>
+      </div>
+      <select onchange="mkFilter=this.value;renderMistake()">
+        <option value="all">所有科目</option>
+        ${S.subjects.map(s=>`<option value="${s.id}" ${mkFilter===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}
+      </select>
+      <span class="tiny muted">共 ${S.mistakes.length} 条 · 未掌握 ${S.mistakes.filter(m=>m.status!=='已掌握').length} 条</span>
+    </div>
+    <div class="grid g4" style="margin-bottom:14px">
+      ${bySubject.map(s=>`<div class="kpi"><div class="k"><span class="dot" style="background:${s.color}"></span>${esc(s.name)}</div><div class="v">${s.n}<small> 条</small></div></div>`).join('')}
+    </div>
+    ${list.length?list.map(m=>{
+      const s = subjectOf(m.subject);
+      const mastered = m.status==='已掌握';
+      return `<div class="row">
+        <button class="chk ${mastered?'on':''}" onclick="toggleMistake('${m.id}')" title="标记已掌握"></button>
+        <div class="grow">
+          <div style="${mastered?'color:var(--txt3)':''}">${esc(m.point)} ${m.type?`<span class="tag">${esc(m.type)}</span>`:''}</div>
+          <div class="task-m"><span class="dot" style="background:${s.color}"></span>${esc(s.name)}
+            · 复习 ${m.count||0} 次${m.next?' · 下次复习 '+esc(m.next):''}${m.source?' · '+esc(m.source):''}</div>
+          ${m.note?`<div class="tiny muted" style="margin-top:3px">${esc(m.note)}</div>`:''}
+        </div>
+        <span class="tag ${mastered?'ok':''}">${esc(m.status||'未掌握')}</span>
+        <button class="link-btn" onclick="editMistake('${m.id}')">编辑</button>
+        <button class="link-btn d" onclick="delMistake('${m.id}')">删除</button>
+      </div>`;
+    }).join('') : '<div class="empty">还没有错题记录，把反复错的知识点写下来。</div>'}
+  </div>`;
+}
+function editMistake(id){
+  const m = id ? S.mistakes.find(x=>x.id===id) : null;
+  openModal({title:m?'编辑错题':'记录错题', fields:[
+    {key:'subject',label:'科目',type:'select',options:[{value:'',label:'未分类'}].concat(S.subjects.map(s=>({value:s.id,label:s.name})))},
+    {key:'point',label:'知识点 / 题目',full:true,ph:'如：方剂学·银翘散组成'},
+    {key:'type',label:'错误类型',type:'select',options:['概念不清','记忆不牢','审题失误','计算/推导错误','时间不够','其他']},
+    {key:'status',label:'掌握状态',type:'select',options:['未掌握','复习中','已掌握'],def:'未掌握'},
+    {key:'count',label:'复习次数',type:'number',def:0},
+    {key:'next',label:'下次复习日期',type:'date'},
+    {key:'source',label:'来源',ph:'如：2023 真题第 12 题'},
+    {key:'date',label:'记录日期',type:'date',def:todayStr()},
+    {key:'note',label:'错因 / 思路',type:'textarea',full:true}
+  ], values:m||{}, onSubmit:v=>{
+    if(!v.point) return toast('请填写知识点');
+    if(m) Object.assign(m,v); else S.mistakes.push(Object.assign({id:uid()},v));
+    save(); renderMistake(); toast('已保存');
+  }});
+}
+function delMistake(id){ confirmDel(()=>{ S.mistakes=S.mistakes.filter(x=>x.id!==id); save(); renderMistake(); }); }
+function toggleMistake(id){ const m=S.mistakes.find(x=>x.id===id); m.status = m.status==='已掌握'?'未掌握':'已掌握'; save(); renderMistake(); }
+
+/* ===================== 模考成绩 ===================== */
+function renderMock(){
+  const list = S.mocks.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const totals = list.map(m=>+m.total||0);
+  const best = totals.length? Math.max(...totals):'—';
+  const last = totals.length? totals[totals.length-1]:'—';
+  $('#page-mock').innerHTML = `
+  <div class="card">
+    <div class="card-h"><h3>模考成绩</h3><span class="sub">记录每次模考，看趋势</span><div class="spacer"></div>
+      <button class="btn sm" onclick="editMock()">+ 记录模考</button></div>
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="kpi"><div class="k">模考次数</div><div class="v">${list.length}</div></div>
+      <div class="kpi"><div class="k">最近总分</div><div class="v">${last}</div></div>
+      <div class="kpi"><div class="k">最高总分</div><div class="v">${best}</div></div>
+    </div>
+    ${drawLine(list)}
+    <div class="tb-wrap" style="margin-top:14px">
+    ${list.length?`<table class="tb"><thead><tr><th>考试</th><th>日期</th>${S.subjects.map(s=>`<th>${esc(s.name)}</th>`).join('')}<th>总分</th><th>备注</th><th class="act">操作</th></tr></thead><tbody>
+      ${list.map(m=>`<tr>
+        <td>${esc(m.name)}</td><td class="muted">${esc(m.date||'')}</td>
+        ${S.subjects.map(s=>`<td>${m.scores&&m.scores[s.id]!=null?m.scores[s.id]:'—'}</td>`).join('')}
+        <td><b>${esc(m.total||0)}</b></td><td class="muted tiny">${esc(m.note||'')}</td>
+        <td class="act"><button class="link-btn" onclick="editMock('${m.id}')">编辑</button>
+        <button class="link-btn d" onclick="delMock('${m.id}')">删除</button></td></tr>`).join('')}
+      </tbody></table>`:'<div class="empty">还没有模考记录，考完一场就记一场。</div>'}
+    </div>
+  </div>`;
+}
+function drawLine(list){
+  if(list.length<2) return list.length? '' : '<div class="empty" style="margin-bottom:14px">记录 2 次以上模考后，这里会显示总分趋势</div>';
+  const w=620,h=130,pad=14;
+  const vals = list.map(m=>+m.total||0);
+  const max = Math.max(...vals), min = Math.min(...vals);
+  const span = (max-min)||1;
+  const pts = vals.map((v,i)=>{
+    const x = pad + i*(w-pad*2)/(vals.length-1);
+    const y = h-pad - (v-min)/span*(h-pad*2);
+    return [x,y];
+  });
+  const d = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  return `<div class="tiny muted" style="margin-bottom:2px">总分趋势</div>
+  <svg class="mini-line" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="height:140px">
+    <path d="${d} L ${pts[pts.length-1][0].toFixed(1)} ${h-pad} L ${pts[0][0].toFixed(1)} ${h-pad} Z" fill="#e8f2f6"/>
+    <path d="${d}" fill="none" stroke="#3d7f9a" stroke-width="2"/>
+    ${pts.map((p,i)=>`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3" fill="#fff" stroke="#3d7f9a" stroke-width="2"/>`).join('')}
+    ${pts.map((p,i)=>`<text x="${p[0].toFixed(1)}" y="${h-2}" font-size="10" fill="#9aa4b0" text-anchor="middle">${esc((list[i].name||'').slice(0,6))}</text>`).join('')}
+    ${pts.map((p,i)=>`<text x="${p[0].toFixed(1)}" y="${(p[1]-8).toFixed(1)}" font-size="10" fill="#6b7684" text-anchor="middle">${vals[i]}</text>`).join('')}
+  </svg>`;
+}
+function editMock(id){
+  const m = id ? S.mocks.find(x=>x.id===id) : null;
+  const fields = [
+    {key:'name',label:'考试名称',ph:'如：十月模考（一）'},
+    {key:'date',label:'日期',type:'date',def:todayStr()}
+  ].concat(S.subjects.map(s=>({key:'sc_'+s.id, label:s.name+' 分数', type:'number', def: m&&m.scores? (m.scores[s.id]||'') : ''})))
+   .concat([{key:'note',label:'备注',type:'textarea',full:true}]);
+  const values = {name:m?m.name:'', date:m?m.date:todayStr(), note:m?m.note:''};
+  if(m&&m.scores) S.subjects.forEach(s=>values['sc_'+s.id]=m.scores[s.id]!=null?m.scores[s.id]:'');
+  openModal({title:m?'编辑模考成绩':'记录模考', fields, values, onSubmit:v=>{
+    if(!v.name) return toast('请填写考试名称');
+    const scores = {}; let total = 0;
+    S.subjects.forEach(s=>{ const val = v['sc_'+s.id]; if(val!==''){ scores[s.id] = +val; total += +val; } });
+    if(m) Object.assign(m,{name:v.name,date:v.date,note:v.note,scores,total});
+    else S.mocks.push({id:uid(),name:v.name,date:v.date,note:v.note,scores,total});
+    save(); renderMock(); toast('已保存，总分 '+total);
+  }});
+}
+function delMock(id){ confirmDel(()=>{ S.mocks=S.mocks.filter(x=>x.id!==id); save(); renderMock(); }); }
+
+/* ===================== 资料库 ===================== */
+function renderRes(){
+  const list = S.resources.slice();
+  $('#page-res').innerHTML = `
+  <div class="card">
+    <div class="card-h"><h3>资料库</h3><span class="sub">教材、网课、真题、笔记都放这儿</span><div class="spacer"></div>
+      <button class="btn sm" onclick="editRes()">+ 添加资料</button></div>
+    ${list.length?`<div class="tb-wrap"><table class="tb"><thead><tr><th>资料</th><th>类型</th><th>科目</th><th>来源</th><th style="min-width:120px">进度</th><th class="act">操作</th></tr></thead><tbody>
+      ${list.map(r=>{
+        const s = subjectOf(r.subject);
+        return `<tr>
+        <td>${r.link?`<a href="${esc(r.link)}" target="_blank" rel="noopener">${esc(r.name)}</a>`:esc(r.name)}
+          ${r.note?`<div class="tiny muted">${esc(r.note)}</div>`:''}</td>
+        <td><span class="tag">${esc(r.type||'其他')}</span></td>
+        <td><span class="dot" style="background:${s.color}"></span>${esc(s.name)}</td>
+        <td class="muted tiny">${esc(r.from||'')}</td>
+        <td><div style="display:flex;align-items:center;gap:8px"><div class="bar" style="flex:1"><i style="width:${r.progress||0}%;background:${s.color}"></i></div><span class="tiny">${r.progress||0}%</span></div></td>
+        <td class="act"><button class="link-btn" onclick="editRes('${r.id}')">编辑</button>
+        <button class="link-btn d" onclick="delRes('${r.id}')">删除</button></td></tr>`;
+      }).join('')}</tbody></table></div>`:'<div class="empty">还没有资料，把在用的书和课登记一下。</div>'}
+  </div>`;
+}
+function editRes(id){
+  const r = id ? S.resources.find(x=>x.id===id) : null;
+  openModal({title:r?'编辑资料':'添加资料', fields:[
+    {key:'name',label:'资料名称',full:true,ph:'如：中医内科学 讲义'},
+    {key:'type',label:'类型',type:'select',options:['教材','网课','真题','笔记','习题','APP','其他']},
+    {key:'subject',label:'科目',type:'select',options:[{value:'',label:'未分类'}].concat(S.subjects.map(s=>({value:s.id,label:s.name})))},
+    {key:'from',label:'来源 / 作者'},
+    {key:'progress',label:'进度（%）',type:'number',def:0},
+    {key:'link',label:'链接 / 路径',full:true,ph:'本地路径或网课网址'},
+    {key:'note',label:'备注',type:'textarea',full:true}
+  ], values:r||{}, onSubmit:v=>{
+    if(!v.name) return toast('请填写名称');
+    if(r) Object.assign(r,v,{progress:Math.min(100,Math.max(0,+v.progress||0))});
+    else S.resources.push(Object.assign({id:uid()},v,{progress:Math.min(100,Math.max(0,+v.progress||0))}));
+    save(); renderRes(); toast('已保存');
+  }});
+}
+function delRes(id){ confirmDel(()=>{ S.resources=S.resources.filter(x=>x.id!==id); save(); renderRes(); }); }
+
+/* ===================== 设置 / 导入导出 ===================== */
+function openSettings(){
+  const fields = [
+    {key:'examDate',label:'初试日期',type:'date'},
+    {key:'school',label:'目标院校'},
+    {key:'major',label:'目标专业'},
+    {key:'motto',label:'一句话打气',full:true}
+  ].concat(S.subjects.map(s=>({key:'tg_'+s.id, label:s.name+' 目标分', type:'number', def:s.target||''})));
+  const values = Object.assign({}, S.meta);
+  S.subjects.forEach(s=>values['tg_'+s.id] = s.target||'');
+  openModal({title:'目标与设置', fields, values, onSubmit:v=>{
+    S.meta.examDate = v.examDate; S.meta.school = v.school; S.meta.major = v.major; S.meta.motto = v.motto;
+    S.subjects.forEach(s=>{ s.target = +v['tg_'+s.id]||0; });
+    S.meta.targetTotal = S.subjects.reduce((a,b)=>a+(+b.target||0),0);
+    save(); renderAll(); toast('已更新');
+  }});
+}
+function openTimerSettings(){
+  openModal({title:'番茄钟设置', fields:[
+    {key:'focusMin',label:'专注时长（分钟）',type:'number',def:S.settings.focusMin},
+    {key:'restMin',label:'休息时长（分钟）',type:'number',def:S.settings.restMin},
+    {key:'sound',label:'结束提示音',type:'select',options:[{value:'true',label:'开启'},{value:'false',label:'关闭'}]},
+    {key:'notify',label:'桌面通知',type:'select',options:[{value:'false',label:'关闭'},{value:'true',label:'开启'}]},
+    {key:'popup',label:'结束弹窗提醒',type:'select',options:[{value:'true',label:'开启'},{value:'false',label:'关闭'}]},
+    {key:'popupAuto',label:'弹窗自动关闭（秒）',type:'number',def:S.settings.popupAuto||0,ph:'0 = 不自动关闭'},
+    {key:'autoRest',label:'专注结束自动进入休息',type:'select',options:[{value:'true',label:'自动开始'},{value:'false',label:'等我点开始'}]}
+  ], values:{focusMin:S.settings.focusMin, restMin:S.settings.restMin, sound:String(S.settings.sound),
+    notify:String(S.settings.notify), popup:String(S.settings.popup!==false), popupAuto:S.settings.popupAuto||0,
+    autoRest:String(S.settings.autoRest!==false)},
+  onSubmit:v=>{
+    S.settings.focusMin = Math.max(1,+v.focusMin||55);
+    S.settings.restMin = Math.max(1,+v.restMin||5);
+    S.settings.sound = v.sound==='true';
+    S.settings.notify = v.notify==='true';
+    S.settings.popup = v.popup==='true';
+    S.settings.popupAuto = Math.max(0,+v.popupAuto||0);
+    S.settings.autoRest = v.autoRest==='true';
+    if(S.settings.notify && window.Notification && Notification.permission==='default') Notification.requestPermission();
+    save(); pomoReset(T.mode); renderAll(); toast('已更新');
+  }});
+}
+/* 试一下弹窗长什么样 */
+function testPomoAlert(){
+  T.running = false; T.mode = 'rest'; T.remain = S.settings.restMin*60;
+  showPomoAlert('focus');
+}
+/* ===================== 多设备同步（同步码） ===================== */
+const SYNC_API = 'https://jsonblob.com/api/jsonBlob';
+const SYNC_TAG = 'kaoyan_workbench';
+const SYNC_VER = 1;
+function syncPayload(){
+  return { __app:SYNC_TAG, __ver:SYNC_VER, __ts:Date.now(), data:S };
+}
+function syncState(){
+  return { code: S.settings.syncCode||'', ts: S.settings.syncTs||0 };
+}
+function fmtSyncTime(ts){
+  if(!ts) return '从未同步';
+  const d = new Date(ts);
+  const diff = Math.round((Date.now()-ts)/1000);
+  if(diff<60) return '刚刚';
+  if(diff<3600) return diff/60<1?'1 分钟前':Math.round(diff/60)+' 分钟前';
+  if(diff<86400) return Math.round(diff/3600)+' 小时前';
+  return d.toLocaleDateString('sv-SE')+' '+d.toTimeString().slice(0,5);
+}
+async function syncFetch(url, opt){
+  const ctl = new AbortController();
+  const timer = setTimeout(()=>ctl.abort(), 20000);
+  try{
+    const r = await fetch(url, Object.assign({signal:ctl.signal}, opt));
+    return r;
+  } finally { clearTimeout(timer); }
+}
+/* 生成新同步码：在云端开一个空档案，拿到 id 当同步码 */
+async function syncCreate(){
+  setSyncMsg('正在生成同步码…', '');
+  try{
+    const r = await syncFetch(SYNC_API, {
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body: JSON.stringify({__app:SYNC_TAG,__ver:SYNC_VER,__ts:Date.now(),data:null})
+    });
+    if(!r.ok && r.status!==201) throw new Error('服务返回 HTTP '+r.status);
+    let id = (r.headers.get('x-jsonblob')||'').trim();
+    if(!id){
+      const loc = (r.headers.get('location')||'').trim();
+      id = loc.split('/').pop();
+    }
+    if(!id || id.length<6) throw new Error('未能取得同步码');
+    S.settings.syncCode = id;
+    S.settings.autoSync = true;   // 生成即开启自动同步
+    save();
+    setSyncMsg('同步码已生成：'+id+'（已开启自动同步）', 'ok');
+    renderSyncBody(); renderSyncBar();
+  }catch(e){
+    setSyncMsg('生成失败：'+e.message+'（检查网络，或改用导出 JSON 手动搬家）', 'err');
+  }
+}
+function syncUseCode(){
+  const v = ($('#syncCodeInput')||{}).value || '';
+  const id = v.trim();
+  if(id.length<6) return setSyncMsg('同步码看起来不完整', 'err');
+  S.settings.syncCode = id;
+  S.settings.autoSync = true;
+  save();
+  setSyncMsg('已绑定同步码（已开启自动同步），点「从云端拉取」试试', 'ok');
+  renderSyncBody(); renderSyncBar();
+}
+/* 上传：本机 → 云端 */
+async function syncPush(silent){
+  const id = syncState().code;
+  if(!id) return setSyncMsg('还没有同步码，先生成一个', 'err');
+  if(syncing) return;
+  const body = JSON.stringify(syncPayload());
+  if(body.length > 800000) return setSyncMsg('数据太大（'+Math.round(body.length/1024)+'KB），请先精简', 'err');
+  if(!silent) setSyncMsg('正在上传…', '');
+  syncing = true;
+  try{
+    // 安全模式：先看云端是不是比本机上次同步的时间更新
+    if(S.settings.safeSync!==false){
+      const g = await syncFetch(SYNC_API+'/'+encodeURIComponent(id), {headers:{'Accept':'application/json'}});
+      if(g.ok){
+        const j = await g.json().catch(()=>null);
+        const cts = j && j.__ts ? j.__ts : 0;
+        if(cts && S.settings.syncTs && cts > S.settings.syncTs + 3000){
+          const t = fmtSyncTime(cts);
+          setSyncMsg('云端有更新的数据（'+t+'），已停止上传。请先点「从云端拉取」，确认后再上传。', 'err');
+          return false;
+        }
+      }
+    }
+    const r = await syncFetch(SYNC_API+'/'+encodeURIComponent(id), {
+      method:'PUT',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body
+    });
+    if(!r.ok) throw new Error('上传失败 HTTP '+r.status);
+    S.settings.syncTs = Date.now();
+    S.settings.lastExport = todayStr();
+    syncing = true; try{ save(); } finally { syncing = false; }
+    renderBackupBar(); renderSyncBar();
+    setSyncMsg('已上传 '+Math.round(body.length/1024)+'KB · '+fmtSyncTime(S.settings.syncTs), 'ok');
+    if(silent) toast('已自动同步到云端');
+    renderSyncBody();
+    return true;
+  }catch(e){
+    setSyncMsg('上传失败：'+e.message, 'err');
+    return false;
+  }finally{
+    syncing = false;
+  }
+}
+/* 拉取：云端 → 本机（先备份本机，可撤销） */
+async function syncPull(){
+  const id = syncState().code;
+  if(!id) return setSyncMsg('还没有同步码', 'err');
+  if(!confirm('将用云端数据覆盖本机的全部记录（科目、计划、时长、真题、错题、模考、资料）。\n本机当前数据会先存一份快照，可撤销。\n\n确定继续吗？')) return;
+  setSyncMsg('正在拉取…', '');
+  try{
+    const r = await syncFetch(SYNC_API+'/'+encodeURIComponent(id), {headers:{'Accept':'application/json'}});
+    if(r.status===404) throw new Error('云端没有这个同步码的数据');
+    if(!r.ok) throw new Error('拉取失败 HTTP '+r.status);
+    const j = await r.json();
+    if(!j || !j.data) throw new Error('云端数据为空或格式不对');
+    if(j.__app && j.__app!==SYNC_TAG) throw new Error('这个同步码存的不是本应用的数据');
+    // 备份本机
+    localStorage.setItem(KEY+'_before_sync', JSON.stringify({ts:Date.now(), state:S}));
+    const code = S.settings.syncCode;
+    const base = defaultState();
+    let ns = Object.assign(base, j.data, {settings:Object.assign(base.settings, (j.data&&j.data.settings)||{})});
+    ns = migrate(ns);
+    ns.settings.syncCode = code;
+    ns.settings.syncTs = j.__ts || Date.now();
+    S = ns;
+    syncing = true;
+    try{ save(); } finally { syncing = false; }
+    renderAll(); renderSyncBody(); renderBackupBar(); renderSyncBar();
+    const n = (S.plans||[]).length + (S.sessions||[]).length;
+    setSyncMsg('已拉取云端数据（'+fmtSyncTime(j.__ts)+'），共 '+n+' 条计划/时长记录', 'ok');
+    toast('已从云端恢复');
+  }catch(e){
+    setSyncMsg('拉取失败：'+e.message, 'err');
+  }
+}
+function syncUndo(){
+  try{
+    const raw = localStorage.getItem(KEY+'_before_sync');
+    if(!raw) return setSyncMsg('没有可撤销的同步记录', 'err');
+    const o = JSON.parse(raw);
+    if(!confirm('把数据恢复到上次拉取前的状态？')) return;
+    const base = defaultState();
+    S = migrate(Object.assign(base, o.state, {settings:Object.assign(base.settings,(o.state&&o.state.settings)||{})}));
+    save(); renderAll(); renderSyncBody();
+    setSyncMsg('已撤销，恢复到拉取前', 'ok');
+  }catch(e){ setSyncMsg('撤销失败：'+e.message, 'err'); }
+}
+function syncClear(){
+  if(!confirm('解除本机的同步码绑定？云端数据不会被删除，只是这台设备不再同步。')) return;
+  S.settings.syncCode = ''; S.settings.syncTs = 0; S.settings.autoSync = false;
+  save(); renderSyncBody(); renderSyncBar(); setSyncMsg('已解除绑定', 'ok');
+}
+function copySyncCode(){
+  const id = syncState().code; if(!id) return;
+  const ta = document.createElement('textarea');
+  ta.value = id; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  try{ document.execCommand('copy'); toast('同步码已复制：'+id); }
+  catch(e){ prompt('复制这个同步码到另一台设备：', id); }
+  document.body.removeChild(ta);
+}
+/* 首页顶部同步状态条 */
+function renderSyncBar(){
+  const el = $('#syncBar'); if(!el) return;
+  const st = syncState();
+  if(!st.code) return;
+  const auto = !!S.settings.autoSync;
+  el.innerHTML = `<div class="syncbar">
+    <span class="dot ${st.ts?'ok':''}" style="background:${st.ts?'var(--ok)':'var(--txt3)'}"></span>
+    <span class="tiny">${auto?'自动同步已开':'已绑定同步码'} · ${fmtSyncTime(st.ts)}</span>
+    <div style="flex:1"></div>
+    <button class="link-btn" onclick="syncPush()">⬆ 上传</button>
+    <button class="link-btn" onclick="syncPull()">⬇ 拉取</button>
+    <button class="link-btn" onclick="openSync()">管理</button>
+  </div>`;
+}
+function setSyncMsg(msg, kind){
+  const el = $('#syncMsg'); if(!el) return;
+  el.style.display = msg ? 'block' : 'none';
+  el.className = 'sync-msg' + (kind? ' '+kind : '');
+  el.textContent = msg;
+}
+function renderSyncBody(){
+  const box = $('#syncBody'); if(!box) return;
+  const st = syncState();
+  const auto = !!S.settings.autoSync;
+  const safe = S.settings.safeSync!==false;
+  box.innerHTML = st.code ? `
+    <div style="margin-bottom:12px">
+      <div class="tiny muted" style="margin-bottom:5px">我的同步码</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <code id="syncCodeTxt" style="background:#f1f4f7;border:1px solid var(--line);border-radius:8px;padding:7px 11px;font-size:13px;letter-spacing:.5px;word-break:break-all">${esc(st.code)}</code>
+        <button class="btn ghost sm" onclick="copySyncCode()">复制</button>
+        <button class="link-btn d" onclick="syncClear()">解除绑定</button>
+      </div>
+      <div class="tiny muted" style="margin-top:6px">上次同步：${fmtSyncTime(st.ts)}</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn" onclick="syncPush()">⬆ 上传本机数据</button>
+      <button class="btn" onclick="syncPull()">⬇ 从云端拉取</button>
+      <button class="btn ghost" onclick="syncUndo()">↩ 撤销上次拉取</button>
+    </div>
+    <div style="display:flex;gap:14px;flex-wrap:wrap" class="tiny">
+      <label><input type="checkbox" id="syncAuto" onchange="S.settings.autoSync=this.checked;save();renderSyncBody()" ${auto?'checked':''}> 自动上传（每次改动后同步）</label>
+      <label><input type="checkbox" id="syncSafe" onchange="S.settings.safeSync=this.checked;save()" ${safe?'checked':''}> 云端更新时不覆盖</label>
+    </div>
+  ` : `
+    <div class="hint">同步码是你在云端的档案编号。在 A 设备生成，B 设备填入同一个码，就能上传 / 拉取全部数据。</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn" onclick="syncCreate()">✨ 生成新同步码</button>
+    </div>
+    <div class="f" style="margin-bottom:8px"><label>或填入已有的同步码</label>
+      <input id="syncCodeInput" placeholder="粘贴另一台设备上的同步码"></div>
+    <button class="btn ghost" onclick="syncUseCode()">绑定这个码</button>
+  `;
+}
+function openSync(){
+  $('#modal').className = 'modal';
+  $('#modal').innerHTML = `
+    <div class="modal-h"><h3>☁ 多设备同步</h3><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-b">
+      <div id="syncBody"></div>
+      <div id="syncMsg" class="sync-msg" style="display:none"></div>
+      <div class="hint" style="margin-top:12px">
+        <b>怎么用</b>：手机生成同步码 → 复制 → 电脑填入 → 电脑点「从云端拉取」。<br>
+        以后在一台设备上改完点「上传」，另一台点「拉取」即可。<br><br>
+        <b>请注意</b>：<br>
+        · 数据存在第三方免费公共服务上，<b>同步码就是唯一凭证</b>，不要发给别人；<br>
+        · 服务方可能清理长期不访问的档案，<b>重要数据仍请定期导出 JSON / Excel 备份</b>；<br>
+        · 两台设备同时改会互相覆盖，拉取前会自动备份本机，可用「撤销」找回。
+      </div>
+    </div>
+    <div class="modal-f"><button class="btn ghost" onclick="closeModal()">关闭</button></div>`;
+  $('#mask').classList.add('on');
+  renderSyncBody();
+}
+
+/* ===================== 导出 Excel（纯前端生成 xlsx） ===================== */
+const CRC_T = (function(){
+  const t = new Uint32Array(256);
+  for(let n=0;n<256;n++){ let c=n; for(let k=0;k<8;k++) c = c&1 ? (0xEDB88320 ^ (c>>>1)) : (c>>>1); t[n]=c>>>0; }
+  return t;
+})();
+function crc32(u8){
+  let c = 0xFFFFFFFF;
+  for(let i=0;i<u8.length;i++) c = CRC_T[(c ^ u8[i]) & 0xFF] ^ (c>>>8);
+  return (c ^ 0xFFFFFFFF)>>>0;
+}
+const utf8 = s => new TextEncoder().encode(s);
+function xEsc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'');
+}
+function colName(n){ let s=''; while(n>0){ const m=(n-1)%26; s=String.fromCharCode(65+m)+s; n=(n-m-1)/26; } return s; }
+function zipStore(files){
+  const chunks=[], central=[]; let offset=0;
+  files.forEach(f=>{
+    const name = utf8(f.name), data = f.data, crc = crc32(data);
+    const lh = new Uint8Array(30+name.length), dv = new DataView(lh.buffer);
+    dv.setUint32(0,0x04034b50,true); dv.setUint16(4,20,true); dv.setUint16(6,0x0800,true);
+    dv.setUint16(8,0,true); dv.setUint16(10,0,true); dv.setUint16(12,0x21,true);
+    dv.setUint32(14,crc,true); dv.setUint32(18,data.length,true); dv.setUint32(22,data.length,true);
+    dv.setUint16(26,name.length,true); dv.setUint16(28,0,true);
+    lh.set(name,30);
+    chunks.push(lh,data);
+    const ch = new Uint8Array(46+name.length), cv = new DataView(ch.buffer);
+    cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true);
+    cv.setUint16(8,0x0800,true); cv.setUint16(10,0,true); cv.setUint16(12,0,true); cv.setUint16(14,0x21,true);
+    cv.setUint32(16,crc,true); cv.setUint32(20,data.length,true); cv.setUint32(24,data.length,true);
+    cv.setUint16(28,name.length,true); cv.setUint16(30,0,true); cv.setUint16(32,0,true);
+    cv.setUint16(34,0,true); cv.setUint16(36,0,true); cv.setUint32(38,0,true); cv.setUint32(42,offset,true);
+    ch.set(name,46); central.push(ch);
+    offset += lh.length + data.length;
+  });
+  const cdSize = central.reduce((a,b)=>a+b.length,0);
+  const eo = new Uint8Array(22), ev = new DataView(eo.buffer);
+  ev.setUint32(0,0x06054b50,true); ev.setUint16(4,0,true); ev.setUint16(6,0,true);
+  ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cdSize,true); ev.setUint32(16,offset,true); ev.setUint16(20,0,true);
+  return new Blob([...chunks, ...central, eo], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function sheetXml(rows, widths){
+  const body = rows.map((r,ri)=>{
+    const cells = r.map((c,ci)=>{
+      const ref = colName(ci+1)+(ri+1);
+      if(c===null||c===undefined||c==='') return `<c r="${ref}"${ri===0?' s="1"':''}/>`;
+      const st = ri===0 ? ' s="1"' : '';
+      if(typeof c==='number' && isFinite(c)) return `<c r="${ref}"${st}><v>${c}</v></c>`;
+      return `<c r="${ref}" t="inlineStr"${st}><is><t xml:space="preserve">${xEsc(c)}</t></is></c>`;
+    }).join('');
+    return `<row r="${ri+1}">${cells}</row>`;
+  }).join('');
+  const cols = widths && widths.length
+    ? `<cols>${widths.map((w,i)=>`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`).join('')}</cols>` : '';
+  return utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${cols}<sheetData>${body}</sheetData></worksheet>`);
+}
+function safeSheetName(n,i){
+  const s = String(n).replace(/[\\\/\?\*\[\]:]/g,'·').slice(0,31) || ('Sheet'+i);
+  return s;
+}
+function buildXlsx(sheets){
+  const files = [];
+  const ct = [`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>`];
+  sheets.forEach((s,i)=>ct.push(`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`));
+  ct.push('</Types>');
+  files.push({name:'[Content_Types].xml', data:utf8(ct.join(''))});
+  files.push({name:'_rels/.rels', data:utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`)});
+  files.push({name:'xl/workbook.xml', data:utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<sheets>${sheets.map((s,i)=>`<sheet name="${xEsc(safeSheetName(s.name,i+1))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets>
+</workbook>`)});
+  const rels = sheets.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`);
+  rels.push(`<Relationship Id="rId900" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`);
+  files.push({name:'xl/_rels/workbook.xml.rels', data:utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${rels.join('')}</Relationships>`)});
+  files.push({name:'xl/styles.xml', data:utf8(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<fonts count="2"><font><sz val="11"/><name val="等线"/></font><font><b/><sz val="11"/><name val="等线"/></font></fonts>
+<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>
+<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>
+<cellStyles count="1"><cellStyle name="常规" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`)});
+  sheets.forEach((s,i)=>{ files.push({name:`xl/worksheets/sheet${i+1}.xml`, data:sheetXml(s.rows, s.widths)}); });
+  return zipStore(files);
+}
+function excelSheets(){
+  const sh = [];
+  const wd = weekDates();
+  const now = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  const ts = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+  const left = daysBetween(todayStr(), S.meta.examDate);
+  const allMin = minutesIn(null,null);
+  const wTasks = S.plans.filter(p=>p.date && wd.includes(p.date));
+  const wRate = wTasks.length ? Math.round(S.plans.filter(p=>p.status==='已完成' && wd.includes(p.date)).length/wTasks.length*100) : 0;
+
+  // 1 汇总
+  sh.push({name:'汇总', widths:[22,26,18,18,18], rows:[
+    ['考研备考工作台 · 数据汇总'],
+    ['导出时间', ts],
+    [],
+    ['项目','内容','','',''],
+    ['初试日期', S.meta.examDate||'未设置'],
+    ['倒计时（天）', left>=0?left:0],
+    ['目标院校', S.meta.school||'未设置'],
+    ['目标专业', S.meta.major||'未设置'],
+    ['目标总分', S.subjects.reduce((a,s)=>a+(+s.target||0),0)],
+    ['累计学习（小时）', +(allMin/60).toFixed(1)],
+    ['累计番茄（个）', S.sessions.filter(s=>s.type==='pomodoro').length],
+    ['本周完成率（%）', wRate],
+    [],
+    ['科目','目标分','进度%','累计时长h','今日时长h'],
+    ...S.subjects.map(s=>[s.name, s.target||0, subjectProgress(s),
+      +(subjectMinutes(s.id,'all')/60).toFixed(1), +(subjectMinutes(s.id,'today')/60).toFixed(1)]),
+    [],
+    ['模块','记录条数','','',''],
+    ['学习计划', S.plans.length],
+    ['学习时长记录', S.sessions.length],
+    ['真题', S.papers.length],
+    ['错题薄弱点', S.mistakes.length],
+    ['模考成绩', S.mocks.length],
+    ['资料', S.resources.length],
+    ['计划模板', (S.templates||[]).length]
+  ]});
+
+  // 2 学习时长
+  const ss = S.sessions.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  sh.push({name:'学习时长', widths:[12,12,8,10,12,20,16], rows:[
+    ['日期','科目','分钟','折合小时','来源','记录时间','备注'],
+    ...ss.map(x=>[ x.date||'', subjectOf(x.subject).name, +x.minutes||0, +((+x.minutes||0)/60).toFixed(2),
+      x.type==='pomodoro'?'番茄钟':'手动补录',
+      x.at? new Date(x.at).toLocaleString('zh-CN',{hour12:false}) : '', x.note||'' ])
+  ]});
+
+  // 3 学习计划
+  const pl = S.plans.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  sh.push({name:'学习计划', widths:[12,12,40,10,10,10,10,24], rows:[
+    ['日期','科目','任务内容','优先级','截止时间','状态','预计h','备注'],
+    ...pl.map(p=>[p.date||'', subjectOf(p.subject).name, p.content||'', p.priority||'中',
+      p.deadline||'', p.status||'待完成', p.hours||'', p.note||''])
+  ]});
+
+  // 4 科目进度
+  sh.push({name:'科目进度', widths:[14,10,10,10,12,12,12,10,40], rows:[
+    ['科目','目标分','进度%','章节总数','已完成章节','今日时长h','本周时长h','今日番茄','累计时长h'],
+    ...S.subjects.map(s=>[s.name, s.target||0, subjectProgress(s), s.chapters.length,
+      s.chapters.filter(c=>c.done).length, +(subjectMinutes(s.id,'today')/60).toFixed(1),
+      +(subjectMinutes(s.id,'week')/60).toFixed(1), subjectPomos(s.id,'today'),
+      +(subjectMinutes(s.id,'all')/60).toFixed(1)])
+  ]});
+
+  // 5 章节明细
+  const chRows = [];
+  S.subjects.forEach(s=>s.chapters.forEach(c=>chRows.push([s.name, c.name, c.done?'已完成':'未完成'])));
+  sh.push({name:'章节明细', widths:[14,36,10], rows:[['科目','章节','状态'], ...chRows]});
+
+  // 6 真题
+  const pp = S.papers.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  sh.push({name:'真题记录', widths:[26,12,12,8,8,10,10,36], rows:[
+    ['试卷','科目','日期','得分','满分','正确率%','用时(分)','复盘要点'],
+    ...pp.map(p=>[p.name||'', subjectOf(p.subject).name, p.date||'', +p.score||0, +p.total||0,
+      p.total? Math.round((+p.score||0)/(+p.total)*100) : '', p.duration||'', p.note||''])
+  ]});
+
+  // 7 错题
+  const ms = S.mistakes.slice();
+  sh.push({name:'错题薄弱点', widths:[12,30,14,10,10,12,22,12,30], rows:[
+    ['科目','知识点/题目','错误类型','状态','复习次数','下次复习','来源','记录日期','错因/思路'],
+    ...ms.map(m=>[subjectOf(m.subject).name, m.point||'', m.type||'', m.status||'未掌握',
+      +m.count||0, m.next||'', m.source||'', m.date||'', m.note||''])
+  ]});
+
+  // 8 模考
+  const mk = S.mocks.slice().sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  const mkHead = ['考试','日期', ...S.subjects.map(s=>s.name), '总分','备注'];
+  const mkRows = mk.map(m=>[m.name||'', m.date||'', ...S.subjects.map(s=>(m.scores&&m.scores[s.id]!=null? m.scores[s.id] : '')),
+    +m.total||0, m.note||'']);
+  sh.push({name:'模考成绩', widths:[20,12, ...S.subjects.map(()=>10), 10, 26], rows:[mkHead, ...mkRows]});
+
+  // 9 资料库
+  sh.push({name:'资料库', widths:[30,10,14,18,10,34,26], rows:[
+    ['资料名称','类型','科目','来源/作者','进度%','链接/路径','备注'],
+    ...S.resources.map(r=>[r.name||'', r.type||'', subjectOf(r.subject).name, r.from||'',
+      +r.progress||0, r.link||'', r.note||''])
+  ]});
+  return sh;
+}
+function exportExcel(){
+  try{
+    const blob = buildXlsx(excelSheets());
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '考研备考工作台-'+todayStr()+'.xlsx';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 3000);
+    toast('已导出 Excel（9 个工作表）');
+  }catch(e){ console.error(e); toast('导出失败：'+e.message); }
+}
+function exportData(){
+  const blob = new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '考研备考工作台-备份-'+todayStr()+'.json';
+  a.click();
+  S.settings.lastExport = todayStr();
+  S.settings.backupCount = (S.settings.backupCount||0)+1;
+  save(); renderBackupBar();
+  toast('已导出备份（第 '+(S.settings.backupCount)+' 次）');
+}
+function daysSinceExport(){
+  if(!S.settings.lastExport) return null;
+  return daysBetween(S.settings.lastExport, todayStr());
+}
+function renderBackupBar(){
+  const el = $('#backupBar'); if(!el) return;
+  const d = daysSinceExport();
+  const btn = $('#exportBtn');
+  if(btn) btn.className = 'tb-btn' + (d!=null && d>=7 ? ' warn' : '');
+  const hasData = S.plans.length + S.sessions.length + S.mistakes.length + S.papers.length + S.mocks.length;
+  if(hasData===0){ el.innerHTML=''; return; }
+  if(d===null){
+    el.innerHTML = `<div class="tip"><span>还没备份过。数据只存在这台设备的浏览器里，建议每周导出一次。</span>
+      <button class="btn sm" onclick="exportData()">立即导出</button></div>`;
+  }else if(d>=7){
+    el.innerHTML = `<div class="tip"><span>距上次备份已 ${d} 天${d>=30?'（有点久了）':''}，建议导出一份存到网盘/微信收藏。</span>
+      <button class="btn sm" onclick="exportData()">立即导出</button></div>`;
+  }else{
+    el.innerHTML = '';
+  }
+}
+/* 关页面前，如果从没备份过且已有数据，提醒一次 */
+window.addEventListener('beforeunload', e=>{
+  const hasData = S.plans.length + S.sessions.length + S.mistakes.length + S.papers.length + S.mocks.length;
+  if(hasData>0 && !S.settings.lastExport){
+    e.preventDefault(); e.returnValue = '你还没导出过备份，数据可能因清理浏览器而丢失。确定离开吗？';
+    return e.returnValue;
+  }
+});
+function importData(input){
+  const file = input.files[0]; if(!file) return;
+  const fr = new FileReader();
+  fr.onload = e=>{
+    try{
+      const d = JSON.parse(e.target.result);
+      if(!d || typeof d!=='object') throw 0;
+      const base = defaultState();
+      S = Object.assign(base, d, {settings:Object.assign(base.settings, d.settings||{})});
+      save(); renderAll(); toast('导入成功');
+    }catch(err){ toast('导入失败：文件格式不正确'); }
+    input.value = '';
+  };
+  fr.readAsText(file);
+}
+
+/* ===================== 导航 & 启动 ===================== */
+const PAGES = [
+  {id:'home', label:'首页', render:()=>renderHome()},
+  {id:'plan', label:'学习计划', render:()=>renderPlan()},
+  {id:'subject', label:'科目进度', render:()=>renderSubject()},
+  {id:'paper', label:'真题管理', render:()=>renderPaper()},
+  {id:'mistake', label:'错题薄弱点', render:()=>renderMistake()},
+  {id:'mock', label:'模考成绩', render:()=>renderMock()},
+  {id:'res', label:'资料库', render:()=>renderRes()}
+];
+let cur = 'home';
+$('#nav').innerHTML = PAGES.map(p=>`<button data-p="${p.id}" onclick="go('${p.id}')">${p.label}</button>`).join('');
+function go(id){
+  cur = id;
+  $$('.page').forEach(el=>el.classList.remove('on'));
+  $('#page-'+id).classList.add('on');
+  $$('#nav button').forEach(b=>b.classList.toggle('on', b.dataset.p===id));
+  const p = PAGES.find(x=>x.id===id); if(p) p.render();
+  window.scrollTo({top:0});
+}
+function renderAll(){
+  PAGES.forEach(p=>{ if(p.id===cur || p.id==='home') p.render(); });
+  go(cur);
+}
+renderAll();
+renderBackupBar();
+renderSyncBar();
+setInterval(()=>{ if(T.running) tickPomo(); }, 1000);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden && T.running){ T.remain = Math.max(0, Math.round((T.endAt-Date.now())/1000)); tickPomo(); } });
+(function restoreTimer(){
+  try{
+    const raw = localStorage.getItem(KEY+'_timer'); if(!raw) return;
+    const d = JSON.parse(raw);
+    if(d && d.endAt > Date.now() + 2000){ T.mode = d.mode||'focus'; T.remain = Math.round((d.endAt-Date.now())/1000); pomoStart(); }
+    else localStorage.removeItem(KEY+'_timer');
+  }catch(e){}
+})();
+window.addEventListener('beforeunload', ()=>{ if(T.running) localStorage.setItem(KEY+'_timer', JSON.stringify({endAt:T.endAt, mode:T.mode})); else localStorage.removeItem(KEY+'_timer'); });
+
+</script>
+</body>
+</html>
